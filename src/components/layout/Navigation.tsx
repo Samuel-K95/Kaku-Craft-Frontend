@@ -1,6 +1,8 @@
 // ============================================================================
-// 6. components/layout/Navigation.tsx
+// components/layout/Navigation.tsx
 // ============================================================================
+'use client';
+
 import React, { useState } from 'react';
 import { Menu, Search, ShoppingBag } from 'lucide-react';
 import { PageView } from '@/types';
@@ -24,14 +26,14 @@ export const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#FDFBF7]/90 border-b border-[#EFEBE4] transition-all duration-300">
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#EFEBE4] border-b border-[#EFEBE4] transition-all duration-300 select-none">
       <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
         
         {/* Left Navigation */}
         <div className="flex items-center space-x-8">
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 -ml-2 rounded-full hover:bg-[#EFEBE4] transition-colors duration-200 md:hidden"
+            className="p-2 -ml-2 rounded-full hover:bg-[#FDFBF7]/80 transition-colors duration-200 md:hidden"
             aria-label="Toggle navigation menu"
           >
             <Menu className="w-6 h-6 text-[#2C302E]" />
@@ -52,8 +54,8 @@ export const Navigation: React.FC<NavigationProps> = ({
                   onClick={() => handleNavigate(pageKey)} 
                   className={`transition-colors py-2 border-b-2 ${
                     currentPage === pageKey 
-                      ? 'border-[#2C302E] text-[#2C302E]' 
-                      : 'border-transparent text-[#2C302E]/60 hover:text-[#2C302E]'
+                      ? 'border-[#2C302E] text-[#2C302E] font-bold' 
+                      : 'border-transparent text-[#2C302E]/65 hover:text-[#2C302E]'
                   }`}
                 >
                   {labels[pageKey]}
@@ -68,7 +70,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           onClick={() => handleNavigate('landing')}
           className="cursor-pointer flex items-center space-x-3 group"
         >
-          <div className="relative w-10 h-10 rounded-full bg-[#EFEBE4] flex items-center justify-center border border-[#D4A373]/40 group-hover:scale-105 transition-transform duration-500">
+          <div className="relative w-10 h-10 rounded-full bg-[#FDFBF7] flex items-center justify-center border border-[#D4A373]/50 group-hover:scale-105 transition-transform duration-500 shadow-sm">
             <span className="font-serif font-black text-lg tracking-tighter text-[#1C4E4F]">ከኩ</span>
           </div>
           <div className="flex flex-col">
@@ -88,15 +90,15 @@ export const Navigation: React.FC<NavigationProps> = ({
           </button>
           <button 
             onClick={() => handleNavigate('shop')} 
-            className="relative p-2.5 rounded-full bg-[#EFEBE4] hover:bg-[#D4A373] hover:text-white transition-all duration-300"
+            className="relative p-2.5 rounded-full bg-[#FDFBF7] hover:bg-[#D4A373] hover:text-white transition-all duration-300 shadow-sm"
             aria-label="Open cart"
           >
-            <ShoppingBag className="w-5 h-5" />
+            <ShoppingBag className="w-5 h-5 text-[#2C302E] hover:text-white" />
             <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#2C302E] text-white text-[10px] flex items-center justify-center font-bold">
               {cartCount}
             </span>
           </button>
-          <div className="hidden lg:flex items-center justify-center w-8 h-8 rounded-full border border-[#2C302E] text-[11px] font-bold tracking-tighter">
+          <div className="hidden lg:flex items-center justify-center w-8 h-8 rounded-full border border-[#2C302E]/40 text-[#2C302E] text-[11px] font-bold tracking-tighter">
             ET
           </div>
         </div>
@@ -104,17 +106,17 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-20 bg-[#FDFBF7] z-40 p-8 flex flex-col justify-between border-t border-[#EFEBE4]">
+        <div className="md:hidden fixed inset-0 top-20 bg-[#EFEBE4]/95 backdrop-blur-md z-40 p-8 flex flex-col justify-between border-t border-[#EFEBE4]">
           <div className="space-y-6">
-            <p className="text-xs font-bold tracking-widest text-[#D4A373] uppercase">Navigation</p>
-            <ul className="space-y-4 font-serif text-2xl">
+            <p className="text-xs font-bold tracking-widest text-[#D4A373] uppercase font-mono">Navigation</p>
+            <ul className="space-y-4 font-serif text-2xl text-[#2C302E]">
               <li><button onClick={() => handleNavigate('landing')}>01. Editorial Home</button></li>
               <li><button onClick={() => handleNavigate('shop')}>02. The Shop & Archive</button></li>
               <li><button onClick={() => handleNavigate('about')}>03. Craft Heritage</button></li>
               <li><button onClick={() => handleNavigate('contact')}>04. Bespoke Inquiries</button></li>
             </ul>
           </div>
-          <div className="pt-6 border-t border-[#EFEBE4] text-xs text-[#2C302E]/60 space-y-2">
+          <div className="pt-6 border-t border-[#EFEBE4] text-xs text-[#2C302E]/60 space-y-2 font-mono">
             <p>Handmade in Addis Ababa • Worldwide Shipping</p>
             <p>© {new Date().getFullYear()} KAKU CRAFT. All Rights Reserved.</p>
           </div>

@@ -10,7 +10,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
   return (
-    <footer className="bg-[#2C302E] text-[#FDFBF7] pt-20 pb-12 px-6 md:px-12 border-t border-[#2C302E]/20">
+    <footer className="bg-[#2C302E]/90 text-[#FDFBF7] pt-20 pb-12 px-6 md:px-12 border-t border-[#2C302E]/20">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 pb-16 border-b border-white/10">
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
