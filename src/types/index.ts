@@ -3,7 +3,14 @@
 // ============================================================================
 export type PageView = 'landing' | 'shop' | 'about' | 'contact';
 
-export type ProductCategory = 'all' | 'wearables' | 'dolls' | 'accessories' | 'home';
+export type ProductCategory = 
+  | 'all' 
+  | 'cardigans' 
+  | 'sweaters' 
+  | 'handbags' 
+  | 'beanies' 
+  | 'small-dolls' 
+  | 'keychain-dolls';
 
 export interface Product {
   id: string;
@@ -20,6 +27,9 @@ export interface Product {
   yarnType: string;
   handcraftedHours: number;
   colorway: string[];
+  dimensions?: string;
+  weightGrams?: number;
+  patternType?: string;
 }
 
 export interface FloatingYarnProps {
