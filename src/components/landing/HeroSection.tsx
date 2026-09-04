@@ -27,11 +27,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       const rawX = (e.clientX - innerWidth / 2);
       const rawY = (e.clientY - innerHeight / 2);
 
-      // Amplified delta coordinates for a more distinct, tangible reaction
       const x = rawX / 18; 
       const y = rawY / 18;
-      const tiltX = -(rawY / innerHeight) * 24; // Increased 3D pitch tilt
-      const tiltY = (rawX / innerWidth) * 24;   // Increased 3D yaw tilt
+      const tiltX = -(rawY / innerHeight) * 24;
+      const tiltY = (rawX / innerWidth) * 24;
 
       setMousePos({ x, y, tiltX, tiltY });
     };
@@ -43,7 +42,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section 
       ref={heroRef}
-      className="relative min-h-[95vh] flex flex-col justify-between items-center px-4 md:px-12 overflow-hidden bg-[#FDFBF7] select-none pt-4"
+      className="relative min-h-[95vh] flex flex-col justify-between items-center px-4 md:px-12 overflow-hidden bg-[#FDFBF7]/85 backdrop-blur-md select-none pt-4 border-b border-[#EFEBE4]/80"
     >
       {/* Micro-grain & Organic Tactile Grid Overlay */}
       <div className="absolute inset-0 opacity-[0.035] pointer-events-none bg-[radial-gradient(#2C302E_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -51,7 +50,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* --- TOP BRAND EDITORIAL BANNER --- */}
       <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center pt-4 pb-2">
         <div className="flex items-center space-x-3 mb-4 md:mb-0">
-          <div className="w-11 h-11 rounded-full border border-[#2C302E]/20 bg-[#EFEBE4]/60 flex items-center justify-center p-2 shadow-sm">
+          <div className="w-11 h-11 rounded-full border border-[#2C302E]/20 bg-[#EFEBE4]/80 backdrop-blur-sm flex items-center justify-center p-2 shadow-sm">
             <Scissors className="w-5 h-5 text-[#2C302E] -rotate-45" />
           </div>
           <div className="text-[11px] uppercase tracking-[0.2em] font-medium leading-tight">
@@ -68,10 +67,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* --- MAIN HERO STAGE (ROYAL BEVERAGE 3D LAYERED COMPOSITION) --- */}
+      {/* --- MAIN HERO STAGE --- */}
       <div className="relative w-full max-w-7xl mx-auto flex-1 flex items-center justify-center py-4 min-h-[520px] md:min-h-[640px]">
         
-        {/* Layer 1: Giant Backdrop Typography (Counter-Parallax Depth Layer) */}
+        {/* Layer 1: Giant Backdrop Typography */}
         <div 
           className="absolute inset-0 flex items-center justify-center text-center pointer-events-none z-0 overflow-hidden"
           style={{
@@ -88,7 +87,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </h1>
         </div>
 
-        {/* Layer 2: Editorial Floating Badge (Amplified High-Orbit Parallax) */}
+        {/* Layer 2: Editorial Floating Badge */}
         <div 
           className="absolute left-4 md:left-12 lg:left-16 top-1/4 -translate-y-1/2 z-10 hidden sm:flex flex-col items-center justify-center pointer-events-none"
           style={{
@@ -96,7 +95,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             transition: 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-2 border-[#1C4E4F] p-1 flex items-center justify-center bg-[#FDFBF7]/90 backdrop-blur-sm shadow-2xl">
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-2 border-[#1C4E4F] p-1 flex items-center justify-center bg-[#FDFBF7]/90 backdrop-blur-md shadow-2xl">
             <div className="w-full h-full rounded-full border border-dashed border-[#1C4E4F]/40 flex flex-col items-center justify-center p-2 text-center">
               <span className="font-serif font-black text-2xl text-[#1C4E4F] leading-none">ከኩ</span>
               <span className="text-[7px] tracking-[0.25em] font-sans uppercase font-bold text-[#2C302E] mt-1">100% PURE</span>
@@ -105,7 +104,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </div>
 
-        {/* Layer 3: Lowered 3D Yarn Spools & Crochet Hooks Cutout Asset (Foreground 3D Parallax & Tilt) */}
+        {/* Layer 3: Lowered 3D Yarn Spools & Crochet Hooks Cutout Asset */}
         <div 
           className="absolute inset-x-0 bottom-[-2%] md:bottom-[0%] flex items-end justify-center pointer-events-none z-20"
           style={{
@@ -115,8 +114,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           }}
         >
           <div className="relative w-[320px] h-[320px] sm:w-[440px] sm:h-[440px] md:w-[540px] md:h-[540px] lg:w-[620px] lg:h-[620px]">
-            
-            {/* Dynamic Ambient Cast Shadow that follows light angle */}
             <div 
               className="absolute bottom-4 sm:bottom-8 left-1/2 w-[85%] h-12 bg-[#2C302E]/35 rounded-[100%] filter blur-2xl transform scale-y-50 -z-10 transition-transform duration-150"
               style={{
@@ -124,7 +121,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               }}
             />
             
-            {/* Real Yarn Cutout Asset with Natural Drop Shadow */}
             <Image
               src={yarnAssetSrc}
               alt="Hand-spun vibrant crochet yarn spools with metallic and ergonomic crochet needles"
@@ -136,7 +132,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </div>
 
-        {/* Layer 4: Editorial Floating Feature Tag (Counter Parallax Tag) */}
+        {/* Layer 4: Editorial Floating Feature Tag */}
         <div 
           className="absolute right-4 md:right-12 lg:right-16 top-1/3 z-10 hidden sm:block pointer-events-none"
           style={{
@@ -144,7 +140,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             transition: 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          <div className="bg-[#FDFBF7]/95 backdrop-blur-md border border-[#EFEBE4] p-4 rounded-2xl shadow-xl max-w-[200px] space-y-1">
+          <div className="bg-[#FDFBF7]/90 backdrop-blur-md border border-[#EFEBE4] p-4 rounded-2xl shadow-xl max-w-[200px] space-y-1">
             <div className="flex items-center space-x-1.5 text-[#D4A373]">
               <span className="text-[9px] uppercase font-bold tracking-widest font-mono">Organic Fibers</span>
             </div>

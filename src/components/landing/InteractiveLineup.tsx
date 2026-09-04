@@ -230,18 +230,13 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
   return (
     <section 
       ref={containerRef} 
-      className="relative w-full h-[650vh] bg-[#EFEBE4]/70 border-y border-[#EFEBE4]"
+      className="relative w-full h-[650vh]  bg-[#EFEBE4]/70 border-y border-[#EFEBE4]"
     >
       {/* Pinned Sticky Viewport: locks cleanly at top-0 */}
       <div 
         className="sticky top-0 h-screen w-full flex flex-col justify-between items-center overflow-hidden px-4 md:px-12 py-8 select-none z-10"
         style={{ position: 'sticky', top: 0 }}
       >
-        {/* Top Status Indicator */}
-        {/* <div className="relative z-30 flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.25em] text-[#D4A373] bg-[#FDFBF7] px-5 py-2 rounded-full border border-[#EFEBE4] shadow-sm">
-          <Sparkles className="w-3.5 h-3.5 text-[#B85D43]" />
-          <span>{getStatusLabel()}</span>
-        </div> */}
 
         {/* --- LAYER 1: BACKGROUND TYPOGRAPHY (OUR COLLECTIONS) --- */}
         <div 

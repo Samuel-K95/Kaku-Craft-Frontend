@@ -37,7 +37,6 @@ const PILLARS: PillarData[] = [
       'Industrial machines cannot synthesize true crochet. Each garment is sculpted individually by an Ethiopian artisan over 24+ focused hours, signed, and certified with an heirloom registry number.',
     icon: Fingerprint,
     accentColor: '#B85D43',
-    // Top Card -> Right-weighted asymmetric leaf
     bgShape: 'rounded-tr-[120px] rounded-bl-[120px] rounded-tl-3xl rounded-br-3xl',
     badge: '100% Unmechanized',
     stats: { value: '28h', label: 'Average Craft Time' },
@@ -52,7 +51,6 @@ const PILLARS: PillarData[] = [
       'Traditional fashion wastes up to 15% of fabric in cutting room scraps. Our additive loop physics consume strictly the exact yardage needed, producing 0% landfill footprint.',
     icon: Layers,
     accentColor: '#52796F',
-    // Middle Card -> Pure geometric circle
     bgShape: 'rounded-full',
     badge: '0% Micro-Waste',
     stats: { value: '0.0%', label: 'Cutting Scrap Ratio' },
@@ -67,7 +65,6 @@ const PILLARS: PillarData[] = [
       'We supply complimentary fiber-matching repair kits and unconditional lifetime mending. If a stitch ever loosens, our atelier re-weaves it back to original structural integrity.',
     icon: HeartHandshake,
     accentColor: '#D4A373',
-    // Bottom Card -> Left-weighted asymmetric leaf
     bgShape: 'rounded-tl-[120px] rounded-br-[120px] rounded-tr-3xl rounded-bl-3xl',
     badge: 'Lifetime Guarantee',
     stats: { value: '∞', label: 'Artisan Mending Care' },
@@ -80,7 +77,8 @@ export const CraftPillars: React.FC = () => {
   const activePillar = PILLARS[activeTab];
 
   return (
-    <section className="relative py-28 px-4 md:px-12 bg-[#FDFBF7] overflow-hidden border-b border-[#EFEBE4]">
+    // Alternating Frosted Glass Section: Oatmeal tint with backdrop blur
+    <section className="relative py-28 px-4 md:px-12 bg-[#EFEBE4]/75 backdrop-blur-lg overflow-hidden border-y border-[#EFEBE4]/80">
       {/* Background Micro Texture */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#2C302E_1px,transparent_1px)] [background-size:16px_16px]" />
 
@@ -90,7 +88,6 @@ export const CraftPillars: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>
             <div className="flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#B85D43]" />
               <span>The Atelier Manifesto</span>
             </div>
             <h2 className="font-serif text-4xl md:text-6xl text-[#2C302E] tracking-tight leading-none">
@@ -107,7 +104,7 @@ export const CraftPillars: React.FC = () => {
         {/* --- MAIN INTERACTIVE 3D STAGE & PILLAR SELECTOR --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
-          {/* LEFT: Pillar Navigational Stepper (Hover Activated) */}
+          {/* LEFT: Pillar Navigational Stepper */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
             {PILLARS.map((pillar, idx) => {
               const isActive = activeTab === idx;
@@ -119,11 +116,10 @@ export const CraftPillars: React.FC = () => {
                   onMouseEnter={() => setActiveTab(idx)}
                   className={`cursor-pointer rounded-3xl p-6 md:p-7 border transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group ${
                     isActive
-                      ? 'bg-[#EFEBE4] border-[#2C302E] shadow-lg translate-x-2'
-                      : 'bg-[#FDFBF7] border-[#EFEBE4] hover:border-[#D4A373] hover:bg-[#EFEBE4]/40 opacity-70 hover:opacity-100'
+                      ? 'bg-[#FDFBF7]/90 border-[#2C302E] shadow-lg translate-x-2 backdrop-blur-md'
+                      : 'bg-[#FDFBF7]/50 border-[#EFEBE4] hover:border-[#D4A373] hover:bg-[#FDFBF7]/70 opacity-75 hover:opacity-100 backdrop-blur-sm'
                   }`}
                 >
-                  {/* Active Indicator Bar */}
                   <div 
                     className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-500 ${
                       isActive ? 'opacity-100' : 'opacity-0'
@@ -169,7 +165,7 @@ export const CraftPillars: React.FC = () => {
           </div>
 
           {/* RIGHT: Dynamic Editorial Display Stage */}
-          <div className="lg:col-span-7 bg-[#EFEBE4] rounded-[40px] p-8 md:p-12 border border-[#2C302E]/10 flex flex-col justify-between relative overflow-hidden shadow-inner min-h-[480px]">
+          <div className="lg:col-span-7 bg-[#FDFBF7]/85 backdrop-blur-md rounded-[40px] p-8 md:p-12 border border-[#2C302E]/10 flex flex-col justify-between relative overflow-hidden shadow-sm min-h-[480px]">
             
             {/* Ambient Watermark Crest */}
             <div className="absolute -right-12 -bottom-12 font-serif text-[18vw] font-black text-[#2C302E]/[0.03] select-none pointer-events-none leading-none transition-all duration-700">
@@ -178,11 +174,10 @@ export const CraftPillars: React.FC = () => {
 
             {/* Top Stage Header */}
             <div className="flex justify-between items-start z-10">
-              <span className="text-[10px] uppercase font-bold tracking-[0.25em] px-3.5 py-1.5 rounded-full bg-[#FDFBF7] text-[#2C302E] border border-[#2C302E]/10 shadow-sm transition-all duration-500">
+              <span className="text-[10px] uppercase font-bold tracking-[0.25em] px-3.5 py-1.5 rounded-full bg-[#EFEBE4] text-[#2C302E] border border-[#2C302E]/10 shadow-sm transition-all duration-500">
                 {activePillar.badge}
               </span>
 
-              {/* Stat Metric */}
               <div className="text-right">
                 <p 
                   className="font-mono text-3xl md:text-4xl font-black leading-none transition-colors duration-500"
@@ -196,7 +191,7 @@ export const CraftPillars: React.FC = () => {
               </div>
             </div>
 
-            {/* Center Visual: Smooth Organic Morphing Stage (Top: Right, Middle: Circle, Bottom: Left) */}
+            {/* Center Visual */}
             <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center z-10">
               <div className="relative aspect-square w-full max-w-[260px] mx-auto">
                 <div 
@@ -215,7 +210,7 @@ export const CraftPillars: React.FC = () => {
               </div>
 
               {/* Body Manifesto */}
-              <div className="space-y-3 text-left animate-in fade-in slide-in-from-bottom-2 duration-500 key={activePillar.id}">
+              <div className="space-y-3 text-left">
                 <h4 className="font-serif text-2xl md:text-3xl text-[#2C302E] leading-snug">
                   {activePillar.tagline}
                 </h4>
