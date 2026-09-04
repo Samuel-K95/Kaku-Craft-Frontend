@@ -25,40 +25,43 @@ export default function KakuCraftApp() {
   };
 
   return (
-    // Crucial: No `overflow-x-hidden` on this outer container to ensure CSS sticky pinning works!
     <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative">
-      {/* Ambient Left & Right Threads */}
-      <FloatingYarnThreads side="left" color="#A3B19B" />
-      <FloatingYarnThreads side="right" color="#D4A373" />
+      {/* 
+        Full-Screen 3D Organic Spun Yarn Filament Simulation 
+        Positioned at z-0 so it shines through all transparent sections
+      */}
+      <FloatingYarnThreads />
 
-      {/* Global Navigation */}
+      {/* Global Navigation with translucent backdrop */}
       <Navigation 
         currentPage={currentPage} 
         onPageChange={setCurrentPage} 
         cartCount={cartCount} 
       />
 
-      {/* View Switcher */}
-      {currentPage === 'landing' && (
-        <LandingView 
-          products={PRODUCTS}
-          onExploreClick={() => setCurrentPage('shop')}
-          onSelectProduct={setQuickViewProduct}
-          onBespokeClick={() => setCurrentPage('contact')}
-        />
-      )}
+      {/* Main View Container Layered above the thread */}
+      <div className="relative z-10">
+        {currentPage === 'landing' && (
+          <LandingView 
+            products={PRODUCTS}
+            onExploreClick={() => setCurrentPage('shop')}
+            onSelectProduct={setQuickViewProduct}
+            onBespokeClick={() => setCurrentPage('contact')}
+          />
+        )}
 
-      {currentPage === 'shop' && (
-        <ShopView 
-          products={PRODUCTS}
-          onAddToCart={handleAddToCart}
-          onSelectProduct={setQuickViewProduct}
-        />
-      )}
+        {currentPage === 'shop' && (
+          <ShopView 
+            products={PRODUCTS}
+            onAddToCart={handleAddToCart}
+            onSelectProduct={setQuickViewProduct}
+          />
+        )}
 
-      {currentPage === 'about' && <AboutView />}
+        {currentPage === 'about' && <AboutView />}
 
-      {currentPage === 'contact' && <ContactView />}
+        {currentPage === 'contact' && <ContactView />}
+      </div>
 
       {/* Quick View Modal */}
       <QuickViewModal 
