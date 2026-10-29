@@ -32,12 +32,12 @@ export const ContactView: React.FC = () => {
   };
 
   return (
-    <main className="relative min-h-screen py-16 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
+    <main className="relative py-16 px-4 md:px-12 bg-transparent text-[#2C302E] select-none">
       <div className="max-w-7xl mx-auto relative z-10 space-y-16">
         
         {/* --- EDITORIAL HEADER --- */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-sm px-5 py-2 rounded-full border border-[#EFEBE4]">
+          <div className="inline-flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-md px-5 py-2 rounded-full border border-[#EFEBE4]">
             <span>Commission Atelier</span>
           </div>
 
