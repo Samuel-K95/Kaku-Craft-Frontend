@@ -5,6 +5,12 @@ import { X, Trash2, Plus, Minus, ArrowRight, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/types';
 import Link from 'next/link';
+import {
+  availabilityLabel,
+  cartFulfillmentNote,
+  deliveryLabel,
+  isInStock,
+} from '@/lib/stock';
 
 interface CartItem {
   product: Product;
@@ -92,6 +98,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     <p className="text-xs text-[#2C302E]/60 mt-1 uppercase tracking-wider font-mono">
                       {item.product.category}
                     </p>
+                    <p
+                      className={`text-[10px] uppercase tracking-widest font-bold mt-2 ${
+                        isInStock(item.product) ? 'text-[#52796F]' : 'text-[#B85D43]'
+                      }`}
+                    >
+                      {availabilityLabel(item.product)} · {deliveryLabel(item.product)}
+                    </p>
                   </div>
 
                   <div className="flex items-center justify-between mt-4">
@@ -134,8 +147,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>50% Deposit Due Now</span>
                 <span className="text-[#B85D43]">${depositRequired.toFixed(2)}</span>
               </div>
-              <p className="text-[10px] text-[#2C302E]/60 font-medium leading-relaxed uppercase tracking-widest text-center mt-2">
-                Remaining 50% paid upon delivery. Making begins after deposit is verified.
+              <p className="text-[10px] text-[#2C302E]/60 font-medium leading-relaxed text-center mt-2">
+                {cartFulfillmentNote(items)}
               </p>
             </div>
 

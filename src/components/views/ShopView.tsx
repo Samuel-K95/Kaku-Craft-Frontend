@@ -5,8 +5,12 @@
 
 import React, { useState, useTransition } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Product, ProductCategory } from '@/types';
+import { Product } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
+import {
+  AvailabilityFilter,
+  isInStock,
+} from '@/lib/stock';
 
 interface ShopViewProps {
   products: Product[];
@@ -38,6 +42,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<string>('all');
+  const [availability, setAvailability] = useState<AvailabilityFilter>('all');
   const [isPending, startTransition] = useTransition();
 
   const filteredProducts = products.filter(p => {
@@ -52,8 +57,9 @@ export const ShopView: React.FC<ShopViewProps> = ({
     if (priceRange === '50-150' && (p.price < 50 || p.price > 150)) return false;
     if (priceRange === 'over-150' && p.price <= 150) return false;
 
-    // (Size filter would go here if our mock data had sizes array, 
-    // for now we'll visually select it but not filter the data out completely)
+    // 4. Availability (in stock vs pre-order)
+    if (availability === 'in_stock' && !isInStock(p)) return false;
+    if (availability === 'pre_order' && isInStock(p)) return false;
 
     return true;
   });
@@ -162,6 +168,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
                      setSelectedSize(null);
                      setSelectedColor(null);
                      setPriceRange('all');
+                     setAvailability('all');
                    }}
                    className="text-[10px] uppercase font-bold tracking-wider text-[#B85D43] hover:underline"
                  >
@@ -170,6 +177,37 @@ export const ShopView: React.FC<ShopViewProps> = ({
                </div>
 
                <div className="space-y-8">
+                 {/* Availability */}
+                 <div>
+                   <h4 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/70 mb-3">
+                     Availability
+                   </h4>
+                   <div className="space-y-3 text-sm font-bold text-[#2C302E]">
+                     {(
+                       [
+                         ['all', 'All Items'],
+                         ['in_stock', 'In Stock (1–2 days)'],
+                         ['pre_order', 'Pre-Order'],
+                       ] as const
+                     ).map(([value, label]) => (
+                       <label key={value} className="flex items-center space-x-3 cursor-pointer group">
+                         <input
+                           type="radio"
+                           name="availability"
+                           value={value}
+                           checked={availability === value}
+                           onChange={() => setAvailability(value)}
+                           className="w-4 h-4 accent-[#B85D43]"
+                         />
+                         <span className="group-hover:text-[#B85D43] transition-colors">{label}</span>
+                       </label>
+                     ))}
+                   </div>
+                   <p className="text-[10px] font-medium text-[#2C302E]/50 mt-3 leading-relaxed">
+                     In stock ships in 1–2 days. Out of stock can be pre-ordered with a make time.
+                   </p>
+                 </div>
+
                  {/* Size */}
                  <div>
                    <h4 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/70 mb-3">Size</h4>
@@ -292,6 +330,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
                      setSelectedSize(null);
                      setSelectedColor(null);
                      setPriceRange('all');
+                     setAvailability('all');
                    }}
                    className="mt-6 px-6 py-2 rounded-full bg-[#B85D43] text-white font-bold text-xs uppercase tracking-widest"
                  >

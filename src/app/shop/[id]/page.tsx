@@ -9,6 +9,12 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { Product } from '@/types';
 import { ArrowLeft, Clock, Ruler, Scale, Scissors, ShoppingBag, Star, PlayCircle, CheckCircle2 } from 'lucide-react';
 import { use } from 'react';
+import {
+  availabilityLabel,
+  cartCtaLabel,
+  deliveryLabel,
+  isInStock,
+} from '@/lib/stock';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -117,6 +123,28 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
+            {/* Availability */}
+            <div
+              className={`rounded-2xl border px-4 py-3 ${
+                isInStock(product)
+                  ? 'bg-[#52796F]/10 border-[#52796F]/20'
+                  : 'bg-[#B85D43]/10 border-[#B85D43]/20'
+              }`}
+            >
+              <p
+                className={`text-xs font-bold uppercase tracking-widest ${
+                  isInStock(product) ? 'text-[#52796F]' : 'text-[#B85D43]'
+                }`}
+              >
+                {availabilityLabel(product)} · {deliveryLabel(product)}
+              </p>
+              <p className="text-[11px] font-medium text-[#2C302E]/70 mt-1">
+                {isInStock(product)
+                  ? 'This item is ready. After your 50% deposit is verified, we can deliver in 1–2 days. Pay the rest on delivery.'
+                  : `This item is out of stock. You can pre-order it. After your 50% deposit is verified, making takes about ${product.productionDays} days. Pay the rest on delivery.`}
+              </p>
+            </div>
+
             {/* Add to Cart */}
             <div className="space-y-4">
               <button 
@@ -124,7 +152,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 className="w-full bg-[#2C302E] text-white py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-[#1a1c1b] transition-colors flex items-center justify-center space-x-3 shadow-lg shadow-black/10"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Add to Cart</span>
+                <span>{cartCtaLabel(product)}</span>
               </button>
               
               <div className="flex items-center justify-center space-x-2 text-[10px] uppercase tracking-widest text-[#2C302E]/50 font-bold">
@@ -142,8 +170,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
               <div className="bg-[#EFEBE4]/50 p-4 rounded-2xl border border-white/50 backdrop-blur-sm">
                 <Clock className="w-4 h-4 text-[#D4A373] mb-2" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mb-1">Time to Make</p>
-                <p className="text-xs font-bold text-[#2C302E]">{product.handcraftedHours} Hours</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mb-1">
+                  {isInStock(product) ? 'Delivery' : 'Make Time'}
+                </p>
+                <p className="text-xs font-bold text-[#2C302E]">{deliveryLabel(product)}</p>
               </div>
               {product.dimensions && (
                 <div className="bg-[#EFEBE4]/50 p-4 rounded-2xl border border-white/50 backdrop-blur-sm">

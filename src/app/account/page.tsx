@@ -166,11 +166,28 @@ export default function AccountPage() {
                                 })}
                               </p>
                             </div>
-                            <div
-                              className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full self-start sm:self-auto ${status.bg} ${status.color}`}
-                            >
-                              <status.icon className="w-3.5 h-3.5" />
-                              <span className="text-[10px] font-bold tracking-widest uppercase">{status.label}</span>
+                            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                              <span
+                                className={`inline-flex px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase ${
+                                  order.fulfillmentType === 'in_stock'
+                                    ? 'bg-[#52796F]/10 text-[#52796F]'
+                                    : order.fulfillmentType === 'pre_order'
+                                      ? 'bg-[#B85D43]/10 text-[#B85D43]'
+                                      : 'bg-[#D4A373]/20 text-[#B85D43]'
+                                }`}
+                              >
+                                {order.fulfillmentType === 'in_stock'
+                                  ? 'In Stock'
+                                  : order.fulfillmentType === 'pre_order'
+                                    ? 'Pre-Order'
+                                    : 'Mixed'}
+                              </span>
+                              <div
+                                className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${status.bg} ${status.color}`}
+                              >
+                                <status.icon className="w-3.5 h-3.5" />
+                                <span className="text-[10px] font-bold tracking-widest uppercase">{status.label}</span>
+                              </div>
                             </div>
                           </div>
 
@@ -193,6 +210,9 @@ export default function AccountPage() {
                                       </h4>
                                       <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mt-1">
                                         Qty: {item.quantity}
+                                        {item.fulfillment === 'in_stock'
+                                          ? ' · In Stock · Ready in 1–2 days'
+                                          : ` · Pre-Order · About ${item.promisedDays} days`}
                                       </p>
                                     </div>
                                     <p className="font-mono text-sm font-bold text-[#2C302E]">

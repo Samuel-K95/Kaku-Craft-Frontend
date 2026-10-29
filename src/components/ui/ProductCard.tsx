@@ -7,6 +7,12 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 import { Product } from '@/types';
+import {
+  availabilityLabel,
+  cartCtaLabel,
+  deliveryLabel,
+  isInStock,
+} from '@/lib/stock';
 
 interface ProductCardProps {
   product: Product;
@@ -34,10 +40,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       className="group cursor-pointer flex flex-col justify-between p-4 sm:p-5 rounded-[36px] bg-[#FDFBF7] border border-[#EFEBE4] hover:border-[#D4A373] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_25px_50px_rgba(212,163,115,0.14)] select-none h-full"
     >
       <div>
-        {/* Top Header Tag & Hours */}
-        <div className="flex items-center justify-end mb-4">
+        {/* Availability + craft time */}
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <span
+            className={`text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full ${
+              isInStock(product)
+                ? 'bg-[#52796F]/15 text-[#52796F]'
+                : 'bg-[#B85D43]/10 text-[#B85D43]'
+            }`}
+          >
+            {availabilityLabel(product)}
+          </span>
           <span className="text-[10px] font-mono text-[#2C302E]/60 uppercase tracking-widest font-medium">
-            {product.handcraftedHours}h Crafted
+            {deliveryLabel(product)}
           </span>
         </div>
 
@@ -111,7 +126,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           }}
           className="px-4 py-2 rounded-full bg-[#EFEBE4] hover:bg-[#D4A373] text-[#2C302E] hover:text-white text-[10px] uppercase tracking-widest font-bold transition-all duration-300"
         >
-          Add to Cart
+          {cartCtaLabel(product)}
         </button>
       </div>
     </div>

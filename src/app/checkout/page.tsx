@@ -3,21 +3,29 @@
 import React, { useState } from 'react';
 import { PRODUCTS } from '@/data/products';
 import Image from 'next/image';
-import { ShieldCheck, UploadCloud, CheckCircle, Info } from 'lucide-react';
+import { UploadCloud, CheckCircle, Info } from 'lucide-react';
 import Link from 'next/link';
+import {
+  availabilityLabel,
+  cartFulfillmentNote,
+  cartMaxWaitDays,
+  deliveryLabel,
+  isInStock,
+} from '@/lib/stock';
 
 export default function CheckoutPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [file, setFile] = useState<File | null>(null);
 
-  // Mock Cart Data for Checkout
+  // Mock cart: one in-stock + one pre-order item
   const cartItems = [
     { product: PRODUCTS[0], quantity: 1 },
-    { product: PRODUCTS[4], quantity: 2 }
+    { product: PRODUCTS.find((p) => p.stock === 0) || PRODUCTS[1], quantity: 1 },
   ];
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const depositRequired = subtotal * 0.5;
+  const { maxDays, hasPreOrder } = cartMaxWaitDays(cartItems);
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +62,9 @@ export default function CheckoutPage() {
           <form onSubmit={handleNextStep} className="bg-[#EFEBE4]/80 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/20 shadow-sm space-y-8 animate-in fade-in duration-500">
             <div>
               <h1 className="font-serif text-4xl text-[#2C302E] mb-2">Shipping Details</h1>
-              <p className="text-sm text-[#2C302E]/60">Where should we deliver your handcrafted artifacts?</p>
+              <p className="text-sm text-[#2C302E]/60 font-medium">
+                Where should we send your order? Timing depends on in-stock vs pre-order items.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -87,8 +97,14 @@ export default function CheckoutPage() {
           <div className="bg-[#EFEBE4]/80 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/20 shadow-sm space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
             <div>
               <h1 className="font-serif text-4xl text-[#2C302E] mb-2">Secure Deposit</h1>
-              <p className="text-sm text-[#2C302E]/60">
-                To begin production, a 50% deposit is required. Please transfer <strong className="text-[#B85D43]">${depositRequired.toFixed(2)}</strong> to our account and upload the receipt.
+              <p className="text-sm text-[#2C302E]/60 font-medium">
+                Pay a 50% deposit now (
+                <strong className="text-[#B85D43]">${depositRequired.toFixed(2)}</strong>
+                ). After we verify it, in-stock items ship in 1–2 days
+                {hasPreOrder
+                  ? `; pre-order items start making and take up to about ${maxDays} days`
+                  : ''}
+                . The remaining 50% is paid on delivery.
               </p>
             </div>
 
@@ -156,8 +172,12 @@ export default function CheckoutPage() {
             </div>
             <div>
               <h1 className="font-serif text-4xl text-[#2C302E] mb-4">Order Received</h1>
-              <p className="text-[#2C302E]/70 max-w-md mx-auto leading-relaxed">
-                Your payment proof is currently under review by our artisans. You will receive an email once production begins.
+              <p className="text-[#2C302E]/70 max-w-md mx-auto leading-relaxed font-medium">
+                Your deposit proof is under review. Once verified, in-stock items can leave in 1–2 days
+                {hasPreOrder
+                  ? `, and pre-order items will be made (about ${maxDays} days)`
+                  : ''}
+                . We will email you with updates.
               </p>
             </div>
             
@@ -189,7 +209,14 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-serif text-[#2C302E] leading-tight mb-1">{item.product.name}</h4>
-                  <p className="text-xs text-[#2C302E]/60 font-mono mb-2">QTY: {item.quantity}</p>
+                  <p className="text-xs text-[#2C302E]/60 font-mono mb-1">QTY: {item.quantity}</p>
+                  <p
+                    className={`text-[10px] uppercase tracking-widest font-bold mb-2 ${
+                      isInStock(item.product) ? 'text-[#52796F]' : 'text-[#B85D43]'
+                    }`}
+                  >
+                    {availabilityLabel(item.product)} · {deliveryLabel(item.product)}
+                  </p>
                   <p className="font-mono font-bold text-sm">${item.product.price * item.quantity}</p>
                 </div>
               </div>
@@ -209,8 +236,9 @@ export default function CheckoutPage() {
 
           <div className="mt-8 bg-[#EFEBE4]/50 p-4 rounded-xl flex gap-3 items-start border border-[#EFEBE4]">
             <Info className="w-5 h-5 text-[#B85D43] shrink-0 mt-0.5" />
-            <p className="text-xs text-[#2C302E]/70 leading-relaxed">
-              The remaining 50% (${(subtotal - depositRequired).toFixed(2)}) will be requested prior to shipping.
+            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-medium">
+              {cartFulfillmentNote(cartItems)} Remaining 50% ($
+              {(subtotal - depositRequired).toFixed(2)}) is paid on delivery.
             </p>
           </div>
         </div>
