@@ -47,22 +47,24 @@ export default function RootLayout({
       className={`${cormorant.variable} ${jakarta.variable} ${spaceMono.variable} scroll-smooth`}
     >
       <body className="bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white min-h-screen flex flex-col relative overflow-x-hidden">
-        {/* Global 3D Organic Spun Yarn Filament Simulation */}
-        <FloatingYarnThreads />
-
         {/* Global Custom Cursor */}
         <CustomCursor />
 
-        {/* Global Navigation */}
-        <Navigation cartCount={2} />
+        <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative">
+          {/* Global 3D Organic Spun Yarn Filament Simulation */}
+          <FloatingYarnThreads />
 
-        {/* Main Content Layered above the thread */}
-        <div className="relative z-10 flex-grow">
-          {children}
+          {/* Global Navigation */}
+          <Navigation cartCount={2} />
+
+          {/* Main Content Layered above the thread */}
+          <div className="relative z-10">
+            {children}
+          </div>
+
+          {/* Global Footer */}
+          <Footer />
         </div>
-
-        {/* Global Footer */}
-        <Footer />
       </body>
     </html>
   );

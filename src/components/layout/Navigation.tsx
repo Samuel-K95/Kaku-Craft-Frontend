@@ -50,7 +50,7 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#EFEBE4]/80 border-b border-[#EFEBE4] transition-all duration-300 select-none">
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-[#EFEBE4] border-b border-[#EFEBE4] transition-all duration-300 select-none">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
           
           {/* Left Navigation */}
@@ -102,14 +102,14 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
           </Link>
 
           {/* Right Utilities */}
-          <div className="flex items-center space-x-4">
-            <button className="hidden sm:block text-[#2C302E]/70 hover:text-[#2C302E] transition-colors p-2" aria-label="Search">
+          <div className="flex items-center space-x-6">
+            <button className="hidden sm:block text-[#2C302E]/70 hover:text-[#2C302E] transition-colors" aria-label="Search">
               <Search className="w-5 h-5" />
             </button>
 
             <Link
               href="/account"
-              className="hidden sm:block text-[#2C302E]/70 hover:text-[#2C302E] transition-colors p-2"
+              className="hidden sm:block text-[#2C302E]/70 hover:text-[#2C302E] transition-colors"
               aria-label="Account"
             >
               <User className="w-5 h-5" />
@@ -128,7 +128,7 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
               )}
             </button>
 
-            <div className="hidden lg:flex items-center justify-center w-8 h-8 rounded-full border border-[#2C302E]/40 text-[#2C302E] text-[11px] font-bold tracking-tighter ml-2">
+            <div className="hidden lg:flex items-center justify-center w-8 h-8 rounded-full border border-[#2C302E]/40 text-[#2C302E] text-[11px] font-bold tracking-tighter">
               ET
             </div>
           </div>
