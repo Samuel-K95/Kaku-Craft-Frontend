@@ -32,7 +32,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#D4A373', '#EFEBE4', '#2C302E'],
     dimensions: 'Oversized Boxy Fit',
     weightGrams: 740,
-    patternType: 'Bubble Rib Weave'
+    patternType: 'Bubble Rib Weave',
+    stock: 5,
+    productionDays: 14
   },
   {
     id: 'card-2',
@@ -51,7 +53,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#B85D43', '#D4A373', '#FDFBF7'],
     dimensions: 'Drop-Shoulder Relaxed',
     weightGrams: 820,
-    patternType: 'Trellis Open Mesh'
+    patternType: 'Trellis Open Mesh',
+    stock: 0,
+    productionDays: 21
   },
 
   // 2. SWEATERS
@@ -72,7 +76,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#FDFBF7', '#2C302E', '#7E8D85'],
     dimensions: 'Structured Raglan Fit',
     weightGrams: 910,
-    patternType: 'Honeycomb Cable'
+    patternType: 'Honeycomb Cable',
+    stock: 3,
+    productionDays: 18
   },
   {
     id: 'swtr-2',
@@ -91,7 +97,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#52796F', '#A3B19B', '#2C302E'],
     dimensions: 'Standard Tailored',
     weightGrams: 680,
-    patternType: 'Double-Seed Moss'
+    patternType: 'Double-Seed Moss',
+    stock: 0,
+    productionDays: 16
   },
 
   // 3. HANDBAGS
@@ -111,7 +119,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#D4A373', '#2C302E', '#C2B8A3'],
     dimensions: '14" x 11" x 6"',
     weightGrams: 420,
-    patternType: 'Basket Weave Rib'
+    patternType: 'Basket Weave Rib',
+    stock: 8,
+    productionDays: 10
   },
   {
     id: 'bag-2',
@@ -129,7 +139,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#2C302E', '#B85D43', '#EFEBE4'],
     dimensions: '10" x 7" x 3"',
     weightGrams: 310,
-    patternType: 'Tight Single-Stitch Spiral'
+    patternType: 'Tight Single-Stitch Spiral',
+    stock: 2,
+    productionDays: 8
   },
 
   // 4. BEANIES
@@ -149,7 +161,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#B85D43', '#2C302E', '#FDFBF7'],
     dimensions: 'Universal Stretch Fit',
     weightGrams: 115,
-    patternType: 'Thermal Waffle Loop'
+    patternType: 'Thermal Waffle Loop',
+    stock: 12,
+    productionDays: 4
   },
   {
     id: 'bean-2',
@@ -167,7 +181,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#52796F', '#D4A373', '#2C302E'],
     dimensions: 'Shallow Dock Fit',
     weightGrams: 95,
-    patternType: 'Dense Half-Double Rib'
+    patternType: 'Dense Half-Double Rib',
+    stock: 0,
+    productionDays: 5
   },
 
   // 5. SMALL DOLLS
@@ -188,7 +204,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#E78EA9', '#A3B19B', '#FDFBF7'],
     dimensions: '14" Height x 6" Width',
     weightGrams: 280,
-    patternType: 'Amigurumi Fine Gauge'
+    patternType: 'Amigurumi Fine Gauge',
+    stock: 1,
+    productionDays: 12
   },
   {
     id: 'doll-2',
@@ -207,7 +225,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#52796F', '#D4A373', '#2C302E'],
     dimensions: '12" Height x 5" Width',
     weightGrams: 240,
-    patternType: 'Textured Spiral Cast'
+    patternType: 'Textured Spiral Cast',
+    stock: 0,
+    productionDays: 14
   },
 
   // 6. KEYCHAIN DOLLS
@@ -227,7 +247,9 @@ export const PRODUCTS: Product[] = [
     colorway: ['#D4A373', '#B85D43', '#2C302E'],
     dimensions: '3.5" Length',
     weightGrams: 35,
-    patternType: 'Micro-Stitch Sculpt'
+    patternType: 'Micro-Stitch Sculpt',
+    stock: 20,
+    productionDays: 3
   },
   {
     id: 'key-2',
@@ -245,6 +267,8 @@ export const PRODUCTS: Product[] = [
     colorway: ['#A3B19B', '#FDFBF7', '#B85D43'],
     dimensions: '3.0" Length',
     weightGrams: 28,
-    patternType: 'Tight Spiral Amigurumi'
+    patternType: 'Tight Spiral Amigurumi',
+    stock: 0,
+    productionDays: 3
   }
 ];
