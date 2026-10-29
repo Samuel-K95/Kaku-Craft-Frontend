@@ -44,7 +44,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${jakarta.variable} ${spaceMono.variable} scroll-smooth`}
+      className={`${cormorant.variable} ${jakarta.variable} ${spaceMono.variable}`}
+      data-scroll-behavior="smooth"
     >
       <body className="bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white min-h-screen flex flex-col relative overflow-x-hidden">
         {/* Global Custom Cursor */}

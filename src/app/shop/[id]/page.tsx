@@ -8,10 +8,13 @@ import { PRODUCTS } from '@/data/products';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Product } from '@/types';
 import { ArrowLeft, Clock, Ruler, Scale, Scissors, ShoppingBag, Star, PlayCircle, CheckCircle2 } from 'lucide-react';
+import { use } from 'react';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const product = PRODUCTS.find((p) => p.id === params.id);
+  const { id } = use(params);
+  
+  const product = PRODUCTS.find((p) => p.id === id);
 
   if (!product) {
     return (
