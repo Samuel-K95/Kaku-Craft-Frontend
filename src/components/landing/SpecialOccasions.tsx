@@ -5,19 +5,23 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { ADMIN_CMS } from '@/data/admin/seed';
 
 interface SpecialOccasionProps {
-  // These would typically come from a CMS
   title?: string;
   subtitle?: string;
   imageUrl?: string;
+  active?: boolean;
 }
 
 export const SpecialOccasions: React.FC<SpecialOccasionProps> = ({
-  title = "Happy Holidays from Kaku Craft",
-  subtitle = "Wishing you a warm and joyful season filled with love, laughter, and cozy handmade moments.",
-  imageUrl = "https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=1200&auto=format&fit=crop"
+  title = ADMIN_CMS.specialOccasion.title,
+  subtitle = ADMIN_CMS.specialOccasion.subtitle,
+  imageUrl = ADMIN_CMS.specialOccasion.imageUrl,
+  active = ADMIN_CMS.specialOccasion.active,
 }) => {
+  if (!active) return null;
+
   return (
     <section className="relative w-full max-w-7xl mx-auto py-16 px-4 md:px-12">
       <div className="relative rounded-[32px] overflow-hidden bg-[#FDFBF7] border border-[#EFEBE4] shadow-md group">

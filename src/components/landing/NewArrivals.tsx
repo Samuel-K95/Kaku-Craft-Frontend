@@ -6,6 +6,7 @@
 import React from 'react';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { ADMIN_CMS } from '@/data/admin/seed';
 
 interface NewArrivalsProps {
   products: Product[];
@@ -13,13 +14,15 @@ interface NewArrivalsProps {
   onAddToCart: (product: Product) => void;
 }
 
-export const NewArrivals: React.FC<NewArrivalsProps> = ({ 
+export const NewArrivals: React.FC<NewArrivalsProps> = ({
   products,
   onSelectProduct,
-  onAddToCart
+  onAddToCart,
 }) => {
-  // Just grabbing a few latest items to simulate "New Arrivals"
-  const newProducts = products.slice(0, 4);
+  const selected = ADMIN_CMS.newArrivalProductIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is Product => Boolean(p));
+  const newProducts = selected.length > 0 ? selected : products.slice(0, 4);
 
   return (
     <section className="relative w-full max-w-7xl mx-auto py-20 px-4 md:px-12 border-t border-[#EFEBE4]">
@@ -37,7 +40,7 @@ export const NewArrivals: React.FC<NewArrivalsProps> = ({
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {newProducts.map((product, idx) => (
-          <ProductCard 
+          <ProductCard
             key={product.id}
             product={product}
             index={idx}
