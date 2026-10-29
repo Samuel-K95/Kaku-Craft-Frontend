@@ -1,31 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import { PRODUCTS } from '@/data/products';
 import { ShopView } from '@/components/views/ShopView';
-import { QuickViewModal } from '@/components/ui/QuickViewModal';
 import { Product } from '@/types';
 
 export default function ShopPage() {
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const router = useRouter();
 
   const handleAddToCart = (_product: Product) => {
-    // We will connect this to a global cart store soon
     alert(`Added ${_product.name} to cart`);
   };
 
   return (
-    <>
-      <ShopView 
-        products={PRODUCTS}
-        onAddToCart={handleAddToCart}
-        onSelectProduct={setQuickViewProduct}
-      />
-      <QuickViewModal 
-        product={quickViewProduct} 
-        onClose={() => setQuickViewProduct(null)} 
-        onAddToCart={handleAddToCart} 
-      />
-    </>
+    <ShopView 
+      products={PRODUCTS}
+      onAddToCart={handleAddToCart}
+      onSelectProduct={(p) => router.push(`/shop/${p.id}`)}
+    />
   );
 }

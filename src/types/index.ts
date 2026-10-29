@@ -28,6 +28,7 @@ export interface Product {
   dimensions?: string;
   weightGrams?: number;
   patternType?: string;
+  videoUrl?: string; // e.g. TikTok / Reel link
 }
 
 export interface FloatingYarnProps {

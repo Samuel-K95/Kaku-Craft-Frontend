@@ -15,7 +15,7 @@ export default function KakuCraftApp() {
     <LandingView 
       products={PRODUCTS}
       onExploreClick={() => router.push('/shop')}
-      onSelectProduct={(p) => router.push(`/shop?product=${p.id}`)}
+      onSelectProduct={(p) => router.push(`/shop/${p.id}`)}
       onBespokeClick={() => router.push('/contact')}
     />
   );
