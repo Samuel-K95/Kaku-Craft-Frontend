@@ -250,10 +250,10 @@ export const FloatingYarnThreads: React.FC<Partial<FloatingYarnProps>> = ({
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 w-screen h-screen pointer-events-none select-none overflow-hidden"
+      className="fixed inset-0 w-screen h-screen pointer-events-none select-none overflow-hidden blur-[4px] opacity-30"
       style={{ zIndex: 0 }}
     >
-      <canvas ref={canvasRef} className="w-full h-full block opacity-70" />
+      <canvas ref={canvasRef} className="w-full h-full block" />
     </div>
   );
 };

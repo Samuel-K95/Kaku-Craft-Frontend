@@ -50,19 +50,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* --- TOP BRAND EDITORIAL BANNER --- */}
       <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center pt-4 pb-2">
         <div className="flex items-center space-x-3 mb-4 md:mb-0">
-          <div className="w-11 h-11 rounded-full border border-[#2C302E]/20 bg-[#EFEBE4]/80 backdrop-blur-sm flex items-center justify-center p-2 shadow-sm">
+          <div className="w-11 h-11 rounded-full border border-[#2C302E]/20 bg-[#EFEBE4]/80 backdrop-blur-md flex items-center justify-center p-2 shadow-sm">
             <Scissors className="w-5 h-5 text-[#2C302E] -rotate-45" />
           </div>
           <div className="text-[11px] uppercase tracking-[0.2em] font-medium leading-tight">
-            <p className="text-[#2C302E] font-bold">Handcrafted Artifacts</p>
-            <p className="text-[#D4A373]">Single Hook Mastery</p>
+            <p className="text-[#2C302E] font-bold">Handmade Products</p>
+            <p className="text-[#D4A373]">Made in Ethiopia</p>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
           <span className="w-2 h-2 rounded-full bg-[#1C4E4F] animate-ping" />
-          <p className="max-w-xs text-xs md:text-sm text-[#2C302E]/80 tracking-wide font-normal leading-relaxed text-left md:text-right">
-            Where heritage fiber sculpture meets modern editorial silhouette.
+          <p className="max-w-xs text-xs md:text-sm text-[#2C302E]/80 tracking-wide font-medium leading-relaxed text-left md:text-right">
+            Beautiful crochet clothes and dolls made by local artisans.
           </p>
         </div>
       </div>

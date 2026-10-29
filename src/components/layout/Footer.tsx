@@ -15,39 +15,39 @@ export const Footer: React.FC = () => {
             <span className="font-serif font-black text-2xl text-[#D4A373]">ከኩ</span>
             <span className="font-serif text-xl tracking-widest">CRAFT</span>
           </div>
-          <p className="text-xs text-white/60 leading-relaxed">
-            Ethical crochet artifacts, meticulously constructed loop by loop. Designed for eternity.
+          <p className="text-xs text-white/60 leading-relaxed font-medium">
+            Handmade crochet clothes and dolls, made with care loop by loop in Ethiopia.
           </p>
         </div>
 
         <div>
-          <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373] mb-4">The Atelier</h4>
-          <ul className="space-y-2 text-xs text-white/70">
-            <li><Link href="/shop" className="hover:text-white">Woolens & Knits</Link></li>
-            <li><Link href="/shop" className="hover:text-white">Amigurumi Sculptures</Link></li>
-            <li><Link href="/shop" className="hover:text-white">Raffia Carryalls</Link></li>
-            <li><Link href="/about" className="hover:text-white">Fiber Sourcing</Link></li>
+          <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373] mb-4">Our Shop</h4>
+          <ul className="space-y-2 text-xs text-white/70 font-medium">
+            <li><Link href="/shop" className="hover:text-white">Cardigans & Sweaters</Link></li>
+            <li><Link href="/shop" className="hover:text-white">Crochet Dolls</Link></li>
+            <li><Link href="/shop" className="hover:text-white">Handbags & Accessories</Link></li>
+            <li><Link href="/about" className="hover:text-white">Our Story</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373] mb-4">Artisan Care</h4>
-          <ul className="space-y-2 text-xs text-white/70">
-            <li><a href="#care" className="hover:text-white">Wool Washing Guide</a></li>
-            <li><a href="#mending" className="hover:text-white">Free Mending Program</a></li>
-            <li><a href="#shipping" className="hover:text-white">Worldwide Dispatch</a></li>
-            <li><a href="#terms" className="hover:text-white">Authenticity Seal</a></li>
+          <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373] mb-4">Customer Care</h4>
+          <ul className="space-y-2 text-xs text-white/70 font-medium">
+            <li><a href="#care" className="hover:text-white">Washing Guide</a></li>
+            <li><a href="#mending" className="hover:text-white">Repairs</a></li>
+            <li><a href="#shipping" className="hover:text-white">Worldwide Shipping</a></li>
+            <li><a href="#terms" className="hover:text-white">Terms of Service</a></li>
           </ul>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373]">Fiber Bulletin</h4>
-          <p className="text-xs text-white/60">Subscribe to receive private drop alerts and limited stitch releases.</p>
+          <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373]">Newsletter</h4>
+          <p className="text-xs text-white/60 font-medium">Subscribe to know about new products and special offers.</p>
           <form onSubmit={(e) => { e.preventDefault(); alert('Subscribed!'); }} className="flex">
             <input 
               type="email" 
               required
-              placeholder="artisan@domain.com" 
+              placeholder="email@example.com" 
               className="bg-white/10 text-xs px-4 py-2.5 rounded-l-full border-none focus:outline-none focus:ring-1 focus:ring-[#D4A373] w-full text-white"
             />
             <button type="submit" className="bg-[#D4A373] text-white px-5 rounded-r-full text-xs hover:bg-[#b58356] transition-colors">

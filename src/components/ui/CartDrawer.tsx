@@ -48,7 +48,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#EFEBE4]">
-          <h2 className="font-serif text-2xl text-[#2C302E]">Your Atelier Basket</h2>
+          <h2 className="font-serif text-2xl text-[#2C302E] font-medium">Your Cart</h2>
           <button 
             onClick={onClose}
             className="p-2 hover:bg-[#EFEBE4] rounded-full transition-colors"
@@ -62,8 +62,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4 text-[#2C302E]/60">
               <ShieldCheck className="w-12 h-12 stroke-[1px]" />
-              <p className="font-serif text-xl">Your basket is empty.</p>
-              <p className="text-sm">Discover our handcrafted artifacts.</p>
+              <p className="font-serif text-xl font-medium">Your cart is empty.</p>
+              <p className="text-sm font-medium">Discover our handmade products.</p>
             </div>
           ) : (
             items.map((item) => (
@@ -125,26 +125,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Footer / Checkout */}
         {items.length > 0 && (
           <div className="p-6 bg-[#EFEBE4]/50 border-t border-[#EFEBE4] space-y-6">
-            <div className="space-y-3 font-mono text-sm text-[#2C302E]">
+            <div className="space-y-3 font-mono text-sm text-[#2C302E] font-medium">
               <div className="flex justify-between">
-                <span className="text-[#2C302E]/60">Total Value</span>
-                <span>${subtotal}</span>
+                <span className="text-[#2C302E]/80 font-bold">Total</span>
+                <span className="font-bold">${subtotal}</span>
               </div>
               <div className="flex justify-between font-bold text-lg border-t border-[#2C302E]/10 pt-3">
-                <span>50% Required Deposit</span>
+                <span>50% Deposit Due Now</span>
                 <span className="text-[#B85D43]">${depositRequired.toFixed(2)}</span>
               </div>
-              <p className="text-[10px] text-[#2C302E]/50 leading-relaxed uppercase tracking-widest text-center mt-2">
-                Remaining 50% paid upon delivery. Production begins upon deposit verification.
+              <p className="text-[10px] text-[#2C302E]/60 font-medium leading-relaxed uppercase tracking-widest text-center mt-2">
+                Remaining 50% paid upon delivery. Making begins after deposit is verified.
               </p>
             </div>
 
             <Link 
               href="/checkout"
               onClick={onClose}
-              className="w-full flex items-center justify-between bg-[#2C302E] text-white px-6 py-4 rounded-full hover:bg-[#1a1c1b] transition-colors group"
+              className="w-full flex items-center justify-between bg-[#2C302E] text-white px-6 py-4 rounded-full hover:bg-[#1a1c1b] transition-colors group shadow-md"
             >
-              <span className="font-bold text-sm tracking-widest uppercase">Proceed to Checkout</span>
+              <span className="font-bold text-sm tracking-widest uppercase">Go to Checkout</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

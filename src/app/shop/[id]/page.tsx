@@ -19,7 +19,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   if (!product) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center space-y-4">
-        <h1 className="font-serif text-3xl text-[#2C302E]">Artifact Not Found</h1>
+        <h1 className="font-serif text-3xl text-[#2C302E]">Item Not Found</h1>
         <Link href="/shop" className="text-xs uppercase tracking-widest font-bold text-[#B85D43] hover:underline">
           Return to Collection
         </Link>
@@ -97,14 +97,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 ${product.price.toFixed(2)}
               </p>
               
-              <p className="text-sm text-[#2C302E]/80 leading-relaxed max-w-md">
+              <p className="text-sm text-[#2C302E]/80 leading-relaxed max-w-md font-medium">
                 {product.description}
               </p>
             </div>
 
             {/* Colors */}
             <div className="space-y-4">
-              <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/60">Artisan Colorways</h3>
+              <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/60">Available Colors</h3>
               <div className="flex items-center space-x-3">
                 {product.colorway.map((hex, i) => (
                   <button 
@@ -124,7 +124,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 className="w-full bg-[#2C302E] text-white py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-[#1a1c1b] transition-colors flex items-center justify-center space-x-3 shadow-lg shadow-black/10"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Add to Atelier Basket</span>
+                <span>Add to Cart</span>
               </button>
               
               <div className="flex items-center justify-center space-x-2 text-[10px] uppercase tracking-widest text-[#2C302E]/50 font-bold">
@@ -137,13 +137,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="grid grid-cols-2 gap-4 pt-6">
               <div className="bg-[#EFEBE4]/50 p-4 rounded-2xl border border-white/50 backdrop-blur-sm">
                 <Scissors className="w-4 h-4 text-[#D4A373] mb-2" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mb-1">Yarn Base</p>
-                <p className="text-xs font-medium text-[#2C302E]">{product.yarnType}</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mb-1">Material</p>
+                <p className="text-xs font-bold text-[#2C302E]">{product.yarnType}</p>
               </div>
               <div className="bg-[#EFEBE4]/50 p-4 rounded-2xl border border-white/50 backdrop-blur-sm">
                 <Clock className="w-4 h-4 text-[#D4A373] mb-2" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mb-1">Crafting Time</p>
-                <p className="text-xs font-medium text-[#2C302E]">{product.handcraftedHours} Hours</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50 mb-1">Time to Make</p>
+                <p className="text-xs font-bold text-[#2C302E]">{product.handcraftedHours} Hours</p>
               </div>
               {product.dimensions && (
                 <div className="bg-[#EFEBE4]/50 p-4 rounded-2xl border border-white/50 backdrop-blur-sm">
@@ -168,8 +168,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="font-serif text-3xl text-[#2C302E]">See It In Motion.</h2>
-              <p className="text-sm text-[#2C302E]/70 max-w-md leading-relaxed">
-                Watch our artisans construct this exact piece in the Addis Ababa studio. From raw highland wool sourcing to the final stitch.
+              <p className="text-sm text-[#2C302E]/70 max-w-md leading-relaxed font-medium">
+                Watch how we make this item in our Addis Ababa studio. From sourcing the wool to the final stitch.
               </p>
               <button className="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-[#B85D43] hover:text-[#2C302E] transition-colors">
                 <PlayCircle className="w-5 h-5" />
@@ -191,8 +191,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {relatedProducts.length > 0 && (
           <div className="space-y-10">
             <div className="text-center">
-              <h2 className="font-serif text-3xl text-[#2C302E]">Related Artifacts</h2>
-              <p className="text-xs font-mono tracking-widest uppercase text-[#2C302E]/50 mt-2">Explore the Collection</p>
+              <h2 className="font-serif text-3xl text-[#2C302E]">Related Items</h2>
+              <p className="text-xs font-mono tracking-widest uppercase text-[#2C302E]/50 mt-2 font-bold">Explore the Collection</p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

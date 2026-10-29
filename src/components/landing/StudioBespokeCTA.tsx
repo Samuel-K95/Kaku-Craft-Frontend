@@ -23,18 +23,18 @@ export const StudioBespokeCTA: React.FC<StudioBespokeCTAProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center space-x-2 bg-white/10 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-[0.25em] text-[#D4A373] font-bold backdrop-blur-sm">
+              <div className="inline-flex items-center space-x-2 bg-white/10 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-[0.25em] text-[#D4A373] font-bold backdrop-blur-md">
                 <Scissors className="w-3.5 h-3.5 text-[#D4A373]" />
-                <span>Custom Needlework Commissions</span>
+                <span>Custom Orders</span>
               </div>
 
               <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-normal leading-[1.08] tracking-tight">
-                Have a silhouette in mind? <br />
-                <span className="italic text-[#D4A373]">We sculpt to your exact frame.</span>
+                Looking for something custom? <br />
+                <span className="italic text-[#D4A373]">We make it exactly how you want.</span>
               </h2>
 
-              <p className="text-xs sm:text-sm text-white/70 max-w-lg leading-relaxed font-sans">
-                Choose your yarn palette, specify chest and sleeve proportions, or design a custom heirloom amigurumi doll. Each custom commission is assigned directly to a master artisan in Addis Ababa.
+              <p className="text-xs sm:text-sm text-white/70 max-w-lg leading-relaxed font-sans font-medium">
+                Choose your colors, give us your size, or design a special doll. We will make it by hand just for you in Addis Ababa.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-white/80 font-mono">

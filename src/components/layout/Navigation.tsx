@@ -42,10 +42,10 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
   };
 
   const navLinks = [
-    { path: '/', label: 'Atelier' },
-    { path: '/shop', label: 'Collection' },
-    { path: '/about', label: 'Heritage' },
-    { path: '/contact', label: 'Bespoke & Contact' }
+    { path: '/', label: 'Home' },
+    { path: '/shop', label: 'Shop' },
+    { path: '/about', label: 'About Us' },
+    { path: '/contact', label: 'Contact Us' }
   ];
 
   return (
@@ -70,10 +70,10 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
                   <Link 
                     key={link.path}
                     href={link.path}
-                    className={`transition-colors py-2 border-b-2 ${
+                    className={`transition-colors py-2 border-b-2 font-bold ${
                       isActive 
-                        ? 'border-[#2C302E] text-[#2C302E] font-bold' 
-                        : 'border-transparent text-[#2C302E]/65 hover:text-[#2C302E]'
+                        ? 'border-[#2C302E] text-[#2C302E]' 
+                        : 'border-transparent text-[#2C302E]/80 hover:text-[#2C302E]'
                     }`}
                   >
                     {link.label}
@@ -101,19 +101,20 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
             </div>
           </Link>
 
-          {/* Right Utilities */}
-          <div className="flex items-center space-x-6">
-            <button className="hidden sm:block text-[#2C302E]/70 hover:text-[#2C302E] transition-colors" aria-label="Search">
-              <Search className="w-5 h-5" />
-            </button>
+        {/* Right Utilities */}
+        <div className="flex items-center space-x-6">
+          <button className="hidden sm:block text-[#2C302E]/80 hover:text-[#2C302E] transition-colors" aria-label="Search">
+            <Search className="w-5 h-5" />
+          </button>
 
-            <Link
-              href="/account"
-              className="hidden sm:block text-[#2C302E]/70 hover:text-[#2C302E] transition-colors"
-              aria-label="Account"
-            >
-              <User className="w-5 h-5" />
-            </Link>
+          <Link
+            href="/account"
+            className="hidden sm:block text-[#2C302E]/80 hover:text-[#2C302E] transition-colors font-medium text-xs tracking-widest uppercase flex items-center space-x-1"
+            aria-label="Account"
+          >
+            <User className="w-4 h-4 mr-1 inline" />
+            My Account
+          </Link>
 
             <button 
               onClick={() => setCartOpen(true)}
@@ -148,7 +149,7 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
                   </li>
                 ))}
                 <li>
-                  <Link href="/account" onClick={handleCloseMobile}>05. Client Portal</Link>
+                  <Link href="/account" onClick={handleCloseMobile}>05. My Account</Link>
                 </li>
               </ul>
             </div>
