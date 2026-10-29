@@ -1,14 +1,12 @@
 // ============================================================================
 // 7. components/layout/Footer.tsx
 // ============================================================================
+'use client';
+
 import React from 'react';
-import { PageView } from '@/types';
+import Link from 'next/link';
 
-interface FooterProps {
-  onPageChange: (page: PageView) => void;
-}
-
-export const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
+export const Footer: React.FC = () => {
   return (
     <footer className="bg-[#2C302E]/90 text-[#FDFBF7] pt-20 pb-12 px-6 md:px-12 border-t border-[#2C302E]/20">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 pb-16 border-b border-white/10">
@@ -25,10 +23,10 @@ export const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
         <div>
           <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-[#D4A373] mb-4">The Atelier</h4>
           <ul className="space-y-2 text-xs text-white/70">
-            <li><button onClick={() => onPageChange('shop')} className="hover:text-white">Woolens & Knits</button></li>
-            <li><button onClick={() => onPageChange('shop')} className="hover:text-white">Amigurumi Sculptures</button></li>
-            <li><button onClick={() => onPageChange('shop')} className="hover:text-white">Raffia Carryalls</button></li>
-            <li><button onClick={() => onPageChange('about')} className="hover:text-white">Fiber Sourcing</button></li>
+            <li><Link href="/shop" className="hover:text-white">Woolens & Knits</Link></li>
+            <li><Link href="/shop" className="hover:text-white">Amigurumi Sculptures</Link></li>
+            <li><Link href="/shop" className="hover:text-white">Raffia Carryalls</Link></li>
+            <li><Link href="/about" className="hover:text-white">Fiber Sourcing</Link></li>
           </ul>
         </div>
 

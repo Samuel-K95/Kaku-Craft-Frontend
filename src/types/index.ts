@@ -1,8 +1,6 @@
 // ============================================================================
 // 1. types/index.ts
 // ============================================================================
-export type PageView = 'landing' | 'shop' | 'about' | 'contact';
-
 export type ProductCategory = 
   | 'all' 
   | 'cardigans' 
@@ -42,4 +40,45 @@ export interface ContactFormData {
   email: string;
   category: string;
   notes: string;
+}
+
+// --- NEW MOCK DOMAIN TYPES ---
+
+export type OrderStatus = 'pending_payment' | 'payment_submitted' | 'payment_verified' | 'in_progress' | 'delivered' | 'completed' | 'cancelled';
+
+export interface MockUser {
+  id: string;
+  email: string;
+  fullName: string;
+  role: 'customer' | 'admin' | 'super_admin';
+  avatarUrl?: string;
+}
+
+export interface MockOrder {
+  id: string;
+  userId: string;
+  items: { productId: string; quantity: number }[];
+  status: OrderStatus;
+  totalPrice: number;
+  amountPaid: number;
+  createdAt: string;
+}
+
+export interface MockCustomOrder {
+  id: string;
+  userId: string;
+  description: string;
+  referenceImageUrl: string;
+  status: OrderStatus;
+  quotePrice?: number;
+  amountPaid: number;
+  createdAt: string;
+}
+
+export interface MockMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
 }
