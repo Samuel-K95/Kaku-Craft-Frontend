@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Sparkles, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { Product } from '@/types';
 
 interface ProductCardProps {
@@ -15,16 +15,6 @@ interface ProductCardProps {
   index?: number;
 }
 
-// Gentle, organic sculptural contours matching the landing page lookbook
-const SILHOUETTE_MASKS = [
-  'rounded-t-[100px] rounded-b-[28px]',
-  'rounded-[80px_28px_80px_28px]',
-  'rounded-full',
-  'rounded-b-[100px] rounded-t-[28px]',
-  'rounded-[28px_80px_28px_80px]',
-  'rounded-t-[80px] rounded-b-[40px]',
-];
-
 export const ProductCard: React.FC<ProductCardProps> = ({ 
   product, 
   onAddToCart,
@@ -32,21 +22,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   index = 0
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const maskClass = SILHOUETTE_MASKS[index % SILHOUETTE_MASKS.length];
+  
+  // Consistent elegant arched window shape for all products
+  const maskClass = 'rounded-t-[80px] rounded-b-[24px]';
 
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onSelectProduct(product)}
-      className="group cursor-pointer flex flex-col justify-between p-6 rounded-[36px] bg-[#FDFBF7] border border-[#EFEBE4] hover:border-[#D4A373] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_25px_50px_rgba(212,163,115,0.14)] select-none"
+      className="group cursor-pointer flex flex-col justify-between p-4 sm:p-5 rounded-[36px] bg-[#FDFBF7] border border-[#EFEBE4] hover:border-[#D4A373] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_25px_50px_rgba(212,163,115,0.14)] select-none h-full"
     >
       <div>
         {/* Top Header Tag & Hours */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-[9px] uppercase font-bold tracking-[0.25em] px-3 py-1 rounded-full bg-[#EFEBE4] text-[#B85D43]">
-            {product.tag}
-          </span>
+        <div className="flex items-center justify-end mb-4">
           <span className="text-[10px] font-mono text-[#2C302E]/60 uppercase tracking-widest font-medium">
             {product.handcraftedHours}h Crafted
           </span>
@@ -89,15 +78,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Artifact Metadata */}
         <div className="mt-5 space-y-1.5 text-left">
-          <div className="flex justify-between items-baseline gap-2">
-            <h3 className="font-serif text-xl text-[#2C302E] font-medium leading-snug group-hover:text-[#B85D43] transition-colors">
+          <div className="flex justify-between items-start gap-2">
+            <h3 className="font-serif text-lg leading-tight text-[#2C302E] font-bold group-hover:text-[#B85D43] transition-colors line-clamp-2 flex-1">
               {product.name}
             </h3>
-            <span className="font-mono text-base font-semibold text-[#2C302E]">
+            <span className="font-mono text-sm font-bold text-[#2C302E] mt-0.5">
               ${product.price}
             </span>
           </div>
-          <p className="text-xs text-[#2C302E]/65 line-clamp-2 leading-relaxed font-sans">
+          <p className="text-[11px] text-[#2C302E]/70 line-clamp-2 leading-relaxed font-medium">
             {product.description}
           </p>
         </div>
@@ -120,9 +109,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             e.stopPropagation();
             onAddToCart(product);
           }}
-          className="px-5 py-2 rounded-full bg-[#EFEBE4] hover:bg-[#D4A373] text-[#2C302E] hover:text-white text-[11px] uppercase tracking-wider font-semibold transition-all duration-300"
+          className="px-4 py-2 rounded-full bg-[#EFEBE4] hover:bg-[#D4A373] text-[#2C302E] hover:text-white text-[10px] uppercase tracking-widest font-bold transition-all duration-300"
         >
-          Acquire
+          Add to Cart
         </button>
       </div>
     </div>
