@@ -9,16 +9,21 @@ import { usePathname } from 'next/navigation';
 import { Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { CartDrawer } from '@/components/ui/CartDrawer';
 import { PRODUCTS } from '@/data/products'; // Mock data for now
+import { isAdminUser, isExpertUser } from '@/data/mockStore';
+import { useAuth } from '@/context/AuthContext';
 
 export const Navigation: React.FC<{ cartCount?: number }> = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const pathname = usePathname();
+  const { user, isAuthenticated, logout } = useAuth();
+  const showAdminLink = isAdminUser(user);
+  const showExpertLink = isExpertUser(user);
 
   // MOCK CART STATE
   const [cartItems, setCartItems] = useState([
-    { product: PRODUCTS[0], quantity: 1 },
-    { product: PRODUCTS[4], quantity: 2 }
+    { product: PRODUCTS[0], quantity: 1 }, // in stock
+    { product: PRODUCTS.find((p) => p.stock === 0) || PRODUCTS[1], quantity: 1 }, // pre-order
   ]);
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -80,6 +85,30 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
                   </Link>
                 );
               })}
+              {showAdminLink && (
+                <Link
+                  href="/admin"
+                  className={`transition-colors py-2 border-b-2 font-bold ${
+                    pathname.startsWith('/admin')
+                      ? 'border-[#B85D43] text-[#B85D43]'
+                      : 'border-transparent text-[#B85D43]/80 hover:text-[#B85D43]'
+                  }`}
+                >
+                  Admin
+                </Link>
+              )}
+              {showExpertLink && (
+                <Link
+                  href="/expert"
+                  className={`transition-colors py-2 border-b-2 font-bold ${
+                    pathname.startsWith('/expert')
+                      ? 'border-[#52796F] text-[#52796F]'
+                      : 'border-transparent text-[#52796F]/80 hover:text-[#52796F]'
+                  }`}
+                >
+                  Expert
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -107,14 +136,41 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
             <Search className="w-5 h-5" />
           </button>
 
-          <Link
-            href="/account"
-            className="hidden sm:block text-[#2C302E]/80 hover:text-[#2C302E] transition-colors font-medium text-xs tracking-widest uppercase flex items-center space-x-1"
-            aria-label="Account"
-          >
-            <User className="w-4 h-4 mr-1 inline" />
-            My Account
-          </Link>
+          {isAuthenticated ? (
+            <div className="hidden sm:flex items-center gap-4">
+              <Link
+                href="/account"
+                className="text-[#2C302E]/80 hover:text-[#2C302E] transition-colors font-medium text-xs tracking-widest uppercase flex items-center"
+                aria-label="Account"
+              >
+                <User className="w-4 h-4 mr-1" />
+                My Account
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="text-[#2C302E]/50 hover:text-[#B85D43] transition-colors font-bold text-[10px] tracking-widest uppercase"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="hidden sm:flex items-center gap-4">
+              <Link
+                href="/signin"
+                className="text-[#2C302E]/80 hover:text-[#2C302E] transition-colors font-medium text-xs tracking-widest uppercase flex items-center"
+              >
+                <User className="w-4 h-4 mr-1" />
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                className="px-4 py-2 rounded-full bg-[#2C302E] text-white text-[10px] tracking-widest uppercase font-bold hover:bg-[#B85D43] transition-colors"
+              >
+                Register
+              </Link>
+            </div>
+          )}
 
             <button 
               onClick={() => setCartOpen(true)}
@@ -148,9 +204,62 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
                     </Link>
                   </li>
                 ))}
-                <li>
-                  <Link href="/account" onClick={handleCloseMobile}>05. My Account</Link>
-                </li>
+                {isAuthenticated ? (
+                  <>
+                    <li>
+                      <Link href="/account" onClick={handleCloseMobile}>
+                        0{navLinks.length + 1}. My Account
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          handleCloseMobile();
+                        }}
+                        className="text-left"
+                      >
+                        0{navLinks.length + 2}. Sign Out
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link href="/signin" onClick={handleCloseMobile}>
+                        0{navLinks.length + 1}. Sign In
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/register" onClick={handleCloseMobile}>
+                        0{navLinks.length + 2}. Register
+                      </Link>
+                    </li>
+                  </>
+                )}
+                {showAdminLink && (
+                  <li>
+                    <Link
+                      href="/admin"
+                      onClick={handleCloseMobile}
+                      className="text-[#B85D43]"
+                    >
+                      Admin
+                    </Link>
+                  </li>
+                )}
+                {showExpertLink && (
+                  <li>
+                    <Link
+                      href="/expert"
+                      onClick={handleCloseMobile}
+                      className="text-[#52796F]"
+                    >
+                      Expert
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
             <div className="pt-6 border-t border-[#EFEBE4] text-xs text-[#2C302E]/60 space-y-2 font-mono">

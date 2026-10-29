@@ -8,6 +8,7 @@ import { CustomCursor } from '@/components/ui/CustomCursor';
 import { FloatingYarnThreads } from '@/components/ui/FloatingYarnThreads';
 import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
+import { AppProviders } from '@/components/providers/AppProviders';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -51,21 +52,23 @@ export default function RootLayout({
         {/* Global Custom Cursor */}
         <CustomCursor />
 
-        <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative">
-          {/* Global 3D Organic Spun Yarn Filament Simulation */}
-          <FloatingYarnThreads />
+        <AppProviders>
+          <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative">
+            {/* Global 3D Organic Spun Yarn Filament Simulation */}
+            <FloatingYarnThreads />
 
-          {/* Global Navigation */}
-          <Navigation cartCount={2} />
+            {/* Global Navigation */}
+            <Navigation cartCount={2} />
 
-          {/* Main Content Layered above the thread */}
-          <div className="relative z-10">
-            {children}
+            {/* Main Content Layered above the thread */}
+            <div className="relative z-10">
+              {children}
+            </div>
+
+            {/* Global Footer */}
+            <Footer />
           </div>
-
-          {/* Global Footer */}
-          <Footer />
-        </div>
+        </AppProviders>
       </body>
     </html>
   );
