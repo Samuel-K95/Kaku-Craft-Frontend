@@ -15,36 +15,36 @@ export const AboutView: React.FC = () => {
         {/* --- EDITORIAL HEADER --- */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-sm px-5 py-2 rounded-full border border-[#EFEBE4]">
-            <span>The Atelier Manifesto</span>
+            <span>Who We Are</span>
           </div>
 
-          <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl text-[#2C302E] leading-none tracking-tight">
-            The Philosophy of <br />
-            <span className="italic font-normal text-[#B85D43]">Slow Stitches.</span>
+          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-[#2C302E] leading-none tracking-tight">
+            The Value of <br />
+            <span className="italic font-normal text-[#B85D43]">Handmade Work.</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-[#2C302E]/70 leading-relaxed font-sans max-w-lg mx-auto">
-            An exploration of unmechanized fiber art, meditative patience, and heirloom craftsmanship sculpted in the Ethiopian highlands.
+          <p className="text-xs sm:text-sm text-[#2C302E]/70 leading-relaxed font-sans max-w-lg mx-auto font-medium">
+            Taking the time to craft beautiful, lasting clothing and accessories in the Ethiopian highlands.
           </p>
         </div>
 
-        {/* --- FULL-WIDTH EDITORIAL HERO SHOWCASE --- */}
-        <div className="relative aspect-[21/9] w-full rounded-[40px] overflow-hidden border-2 border-[#EFEBE4] shadow-md">
+        {/* --- SMALLER EDITORIAL HERO SHOWCASE --- */}
+        <div className="relative aspect-[16/9] max-w-4xl mx-auto w-full rounded-[40px] overflow-hidden border-2 border-[#EFEBE4] shadow-md">
           <Image 
-            src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1600&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop"
             alt="Hands crocheting with wooden hooks and organic wool"
             fill
-            sizes="100vw"
+            sizes="(max-width: 1200px) 100vw, 1200px"
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2C302E]/70 via-transparent to-transparent pointer-events-none" />
           
           <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white text-xs font-mono">
-            <span className="bg-[#2C302E]/80 backdrop-blur-md px-4 py-2 rounded-full uppercase tracking-widest text-[10px]">
-              Addis Ababa Atelier • Studio 01
+            <span className="bg-[#2C302E]/80 backdrop-blur-md px-4 py-2 rounded-full uppercase tracking-widest text-[10px] font-bold">
+              Addis Ababa Studio
             </span>
             <span className="hidden sm:inline-block text-[#D4A373] uppercase tracking-widest font-bold text-[10px] bg-[#2C302E]/80 backdrop-blur-md px-4 py-2 rounded-full">
-              100% Unmechanized Process
+              100% Handmade Process
             </span>
           </div>
         </div>
@@ -53,23 +53,23 @@ export const AboutView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-5 space-y-4">
             <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D4A373] font-mono">
-              Founding Principle
+              Our Story
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl text-[#2C302E] leading-tight">
-              &ldquo;To knit is to craft structure; to crochet is to sculpt emotion stitch by stitch.&rdquo;
+              &ldquo;To knit is to make clothing; to crochet is to craft art stitch by stitch.&rdquo;
             </h2>
             <div className="w-16 h-0.5 bg-[#D4A373]" />
           </div>
 
-          <div className="lg:col-span-7 space-y-6 text-[#2C302E]/80 font-sans text-sm sm:text-base leading-relaxed">
+          <div className="lg:col-span-7 space-y-6 text-[#2C302E]/80 font-sans text-sm sm:text-base leading-relaxed font-medium">
             <p>
-              Founded in Addis Ababa, <strong>Kaku Craft</strong> is an experimental textile studio committed to preserving the meditative art of manual crochet while re-interpreting it through contemporary silhouettes and architectural garment forms.
+              Based in Addis Ababa, <strong>Kaku Craft</strong> is a handmade clothing studio. We focus on the peaceful art of crochet to create beautiful, modern clothing and items.
             </p>
             <p>
-              Unlike industrial knitting looms, true crochet stitches cannot be synthesized by automated machinery. Every single spiral, loop, and tension-pull is an irreproducible human gesture. When you wear a Kaku Craft creation, you are wearing hours of focused human patience.
+              Unlike factory machines, real crochet can only be done by human hands. Every single loop is made by an artisan. When you wear a Kaku Craft item, you are wearing something that took hours of focus and care to make.
             </p>
             <p>
-              Our additive loop methodology guarantees that zero fabric is discarded to landfill during production. From double-spun Ethiopian highland mohair to botanical vegetable dyes, every raw filament is consciously stewarded.
+              Our process is also completely zero-waste. From our Ethiopian highland wool to our natural plant dyes, we make sure to use everything and throw away nothing.
             </p>
           </div>
         </div>
@@ -80,9 +80,9 @@ export const AboutView: React.FC = () => {
             <div className="w-10 h-10 rounded-2xl bg-[#B85D43]/15 flex items-center justify-center text-[#B85D43]">
               <Scissors className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-[#2C302E] font-medium">Single Artisan Provenance</h3>
-            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans">
-              One master artisan shapes your garment from the initial cast-on to final knot, numbered and signed upon completion.
+            <h3 className="font-serif text-xl text-[#2C302E] font-bold">One Artisan Per Item</h3>
+            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans font-medium">
+              One skilled crafter shapes your garment from the first loop to the final knot, ensuring consistent tension and quality.
             </p>
           </div>
 
@@ -90,9 +90,9 @@ export const AboutView: React.FC = () => {
             <div className="w-10 h-10 rounded-2xl bg-[#52796F]/15 flex items-center justify-center text-[#52796F]">
               <Compass className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-[#2C302E] font-medium">Zero-Waste Loop Anatomy</h3>
-            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans">
-              Our additive loop physics consume strictly the exact yardage required, resulting in virtually 0% cutting scraps.
+            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Zero-Waste Making</h3>
+            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans font-medium">
+              Our loop method uses exactly the amount of yarn needed. We produce zero fabric scraps that would end up in a landfill.
             </p>
           </div>
 
@@ -100,10 +100,67 @@ export const AboutView: React.FC = () => {
             <div className="w-10 h-10 rounded-2xl bg-[#D4A373]/20 flex items-center justify-center text-[#D4A373]">
               <HeartHandshake className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-[#2C302E] font-medium">Perpetual Mending Pact</h3>
-            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans">
-              Every commission includes fiber-matching restoration kits and unconditional lifetime atelier mending support.
+            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Lifetime Support</h3>
+            <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans font-medium">
+              Every item comes with matching yarn for repairs. We are here to help you fix any damage your item might take over the years.
             </p>
+          </div>
+        </div>
+
+        {/* --- EVENTS, GALLERY & EXHIBITIONS SECTION --- */}
+        <div className="pt-16 pb-8">
+          <div className="text-center mb-12 space-y-2">
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#2C302E]">Events & Exhibitions</h2>
+            <p className="text-sm font-medium text-[#2C302E]/70 max-w-lg mx-auto">
+              Join us in person to see our latest collections and meet the crafters behind Kaku Craft.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-10">
+            {/* Event 1 — image left, text right */}
+            <div className="group grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[32px] border border-[#EFEBE4] bg-[#FDFBF7] hover:shadow-lg transition-all">
+              <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[280px] w-full">
+                <Image 
+                  src="https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop"
+                  alt="Addis Ababa Fashion Week"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-[#B85D43]">
+                  Upcoming
+                </div>
+              </div>
+              <div className="flex flex-col justify-center p-8 md:p-10 space-y-3">
+                <h3 className="font-serif text-2xl md:text-3xl text-[#2C302E] font-bold">Addis Ababa Fashion Week</h3>
+                <p className="text-xs font-mono text-[#2C302E]/60 uppercase tracking-widest font-bold">
+                  Nov 12 - Nov 15, 2026 • Skylight Hotel
+                </p>
+                <p className="text-sm font-medium text-[#2C302E]/80 leading-relaxed">
+                  Catch our runway debut featuring our winter collection of oversized mohair cardigans and heavy-knit blankets.
+                </p>
+              </div>
+            </div>
+
+            {/* Event 2 — text left, image right */}
+            <div className="group grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[32px] border border-[#EFEBE4] bg-[#FDFBF7] hover:shadow-lg transition-all">
+              <div className="flex flex-col justify-center p-8 md:p-10 space-y-3 order-2 md:order-1">
+                <h3 className="font-serif text-2xl md:text-3xl text-[#2C302E] font-bold">Monthly Studio Open House</h3>
+                <p className="text-xs font-mono text-[#2C302E]/60 uppercase tracking-widest font-bold">
+                  First Saturday of every month • Kaku Studio
+                </p>
+                <p className="text-sm font-medium text-[#2C302E]/80 leading-relaxed">
+                  Visit our workspace, browse raw yarns, meet the artisans, and learn the basics of crochet in our free afternoon workshop.
+                </p>
+              </div>
+              <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[280px] w-full order-1 md:order-2">
+                <Image 
+                  src="https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?q=80&w=800&auto=format&fit=crop"
+                  alt="Studio Open House"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
