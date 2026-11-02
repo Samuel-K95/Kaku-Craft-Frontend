@@ -1,105 +1,145 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { MockUser } from '@/types';
-import { ADMIN_USERS } from '@/data/admin/seed';
-import { MOCK_USERS } from '@/data/mockStore';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { User, BackendUserPayload, LoginResponse, RegisterResponse } from '@/types/auth';
+import {
+  api,
+  clearStoredTokens,
+  getStoredTokens,
+  mapBackendUser,
+  normalizeError,
+  setStoredTokens,
+} from '@/lib/api';
 
-type AuthUser = MockUser;
+export type AuthUser = User;
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (
     email: string,
     password: string
-  ) => { ok: true; user: AuthUser } | { ok: false; error: string };
+  ) => Promise<{ ok: true; user: AuthUser } | { ok: false; error: string }>;
   register: (data: {
     fullName: string;
     email: string;
     password: string;
-  }) => { ok: true } | { ok: false; error: string };
+  }) => Promise<{ ok: true; user?: AuthUser } | { ok: false; error: string }>;
   logout: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/** Seed directory for mock sign-in (password ignored except non-empty). */
-function buildDirectory(): AuthUser[] {
-  const byEmail = new Map<string, AuthUser>();
-  [...MOCK_USERS, ...ADMIN_USERS].forEach((u) => {
-    byEmail.set(u.email.toLowerCase(), {
-      id: u.id,
-      email: u.email,
-      fullName: u.fullName,
-      role: u.role,
-      avatarUrl: u.avatarUrl,
-      joinedAt: 'joinedAt' in u ? u.joinedAt : undefined,
-    });
-  });
-  return Array.from(byEmail.values());
-}
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [directory, setDirectory] = useState<AuthUser[]>(() => buildDirectory());
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const refreshProfile = useCallback(async () => {
+    const tokens = getStoredTokens();
+    if (!tokens?.access) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const data = await api.get<BackendUserPayload>('/users/profile/');
+      setUser(mapBackendUser(data));
+    } catch {
+      setUser(null);
+      clearStoredTokens();
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshProfile();
+
+    const handleLogout = () => {
+      setUser(null);
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
+  }, [refreshProfile]);
 
   const login = useCallback(
-    (email: string, password: string) => {
+    async (email: string, password: string) => {
       if (!email.trim() || !password.trim()) {
         return { ok: false as const, error: 'Please enter your email and password.' };
       }
-      const found = directory.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (!found) {
-        return {
-          ok: false as const,
-          error: 'No account found with that email. Try registering, or use a demo email.',
-        };
+
+      try {
+        const data = await api.post<LoginResponse>(
+          '/users/auth/signin/',
+          { email: email.trim(), password },
+          { requiresAuth: false }
+        );
+
+        setStoredTokens({ access: data.access, refresh: data.refresh });
+        const loggedInUser = mapBackendUser(data.user);
+        setUser(loggedInUser);
+        return { ok: true as const, user: loggedInUser };
+      } catch (err) {
+        return { ok: false as const, error: normalizeError(err) };
       }
-      setUser(found);
-      return { ok: true as const, user: found };
     },
-    [directory]
+    []
   );
 
   const register = useCallback(
-    (data: { fullName: string; email: string; password: string }) => {
-      const email = data.email.trim().toLowerCase();
-      if (!data.fullName.trim() || !email || !data.password.trim()) {
+    async (data: { fullName: string; email: string; password: string }) => {
+      const email = data.email.trim();
+      const fullName = data.fullName.trim();
+      const password = data.password;
+
+      if (!fullName || !email || !password) {
         return { ok: false as const, error: 'Please fill in all fields.' };
       }
-      if (data.password.length < 6) {
-        return { ok: false as const, error: 'Password should be at least 6 characters.' };
+      if (password.length < 8) {
+        return { ok: false as const, error: 'Password must be at least 8 characters long.' };
       }
-      if (directory.some((u) => u.email.toLowerCase() === email)) {
-        return { ok: false as const, error: 'An account with this email already exists. Please sign in.' };
+
+      try {
+        await api.post<RegisterResponse>(
+          '/users/auth/signup/',
+          {
+            email,
+            full_name: fullName,
+            password,
+          },
+          { requiresAuth: false }
+        );
+
+        // Auto-login upon successful registration
+        return await login(email, password);
+      } catch (err) {
+        return { ok: false as const, error: normalizeError(err) };
       }
-      const newUser: AuthUser = {
-        id: `u-${Date.now()}`,
-        email: data.email.trim(),
-        fullName: data.fullName.trim(),
-        role: 'USER',
-        avatarUrl: `https://i.pravatar.cc/150?u=${encodeURIComponent(email)}`,
-        joinedAt: new Date().toISOString(),
-      };
-      setDirectory((prev) => [...prev, newUser]);
-      setUser(newUser);
-      return { ok: true as const };
     },
-    [directory]
+    [login]
   );
 
-  const logout = useCallback(() => setUser(null), []);
+  const logout = useCallback(() => {
+    clearStoredTokens();
+    setUser(null);
+  }, []);
 
   const value = useMemo(
     () => ({
       user,
       isAuthenticated: !!user,
+      isLoading,
       login,
       register,
       logout,
+      refreshProfile,
     }),
-    [user, login, register, logout]
+    [user, isLoading, login, register, logout, refreshProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -11,36 +11,22 @@ import { CartDrawer } from '@/components/ui/CartDrawer';
 import { PRODUCTS } from '@/data/products'; // Mock data for now
 import { isAdminUser, isExpertUser } from '@/data/mockStore';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 export const Navigation: React.FC<{ cartCount?: number }> = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
+  const {
+    items: cartItems,
+    itemCount: cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    updateQuantity,
+    removeItem,
+  } = useCart();
   const showAdminLink = isAdminUser(user);
   const showExpertLink = isExpertUser(user);
-
-  // MOCK CART STATE
-  const [cartItems, setCartItems] = useState([
-    { product: PRODUCTS[0], quantity: 1 }, // in stock
-    { product: PRODUCTS.find((p) => p.stock === 0) || PRODUCTS[1], quantity: 1 }, // pre-order
-  ]);
-
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
-  const handleUpdateQuantity = (id: string, delta: number) => {
-    setCartItems(prev => prev.map(item => {
-      if (item.product.id === id) {
-        const newQ = Math.max(1, item.quantity + delta);
-        return { ...item, quantity: newQ };
-      }
-      return item;
-    }));
-  };
-
-  const handleRemove = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.product.id !== id));
-  };
 
   const handleCloseMobile = () => {
     setMobileMenuOpen(false);
@@ -173,7 +159,7 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
           )}
 
             <button 
-              onClick={() => setCartOpen(true)}
+              onClick={() => setIsCartOpen(true)}
               className="relative p-2.5 rounded-full bg-[#FDFBF7] hover:bg-[#D4A373] hover:text-white transition-all duration-300 shadow-sm"
               aria-label="Open cart"
             >
@@ -272,11 +258,11 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
 
       {/* Slide-out Cart */}
       <CartDrawer 
-        isOpen={cartOpen} 
-        onClose={() => setCartOpen(false)}
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)}
         items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemove={handleRemove}
+        onUpdateQuantity={updateQuantity}
+        onRemove={removeItem}
       />
     </>
   );

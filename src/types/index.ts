@@ -61,13 +61,14 @@ export type OrderStatus =
   | 'cancelled';
 
 export interface MockUser {
-  id: string;
+  id: string | number;
   email: string;
   fullName: string;
   /** @deprecated prefer AdminRole via role field mapping */
   role: AdminRole | 'customer' | 'admin' | 'super_admin';
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   joinedAt?: string;
+  dateJoined?: string;
 }
 
 export interface AdminUser {

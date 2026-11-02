@@ -14,11 +14,12 @@ import {
 
 interface ShopViewProps {
   products: Product[];
+  categories?: { id: string; label: string }[];
   onAddToCart: (product: Product) => void;
   onSelectProduct: (product: Product) => void;
 }
 
-const CATEGORIES: { id: string; label: string }[] = [
+const DEFAULT_CATEGORIES: { id: string; label: string }[] = [
   { id: 'all', label: 'All Items' },
   { id: 'cardigans', label: 'Cardigans' },
   { id: 'sweaters', label: 'Sweaters' },
@@ -35,9 +36,11 @@ const CATEGORIES: { id: string; label: string }[] = [
 
 export const ShopView: React.FC<ShopViewProps> = ({ 
   products, 
+  categories,
   onAddToCart, 
   onSelectProduct 
 }) => {
+  const categoryList = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -123,7 +126,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
             className="flex overflow-x-auto py-2 px-4 mx-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
           >
             <div className="inline-flex items-center space-x-2 p-1.5 rounded-full bg-[#EFEBE4]/85 border border-[#EFEBE4] backdrop-blur-lg shadow-sm shrink-0 min-w-max mx-auto">
-              {CATEGORIES.map((cat) => {
+              {categoryList.map((cat) => {
                 const isActive = selectedCategory === cat.id;
 
                 return (

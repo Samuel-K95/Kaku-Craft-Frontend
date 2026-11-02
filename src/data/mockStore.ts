@@ -1,4 +1,5 @@
 import { MockUser, MockOrder, MockCustomOrder, MockMessage } from '@/types';
+import { User } from '@/types/auth';
 
 export const MOCK_USERS: MockUser[] = [
   {
@@ -33,12 +34,12 @@ export const MOCK_USERS: MockUser[] = [
  */
 export const MOCK_AUTHENTICATED_USER: MockUser = MOCK_USERS[2];
 
-export function isAdminUser(user?: MockUser | null): boolean {
+export function isAdminUser(user?: MockUser | User | null): boolean {
   if (!user) return false;
   return user.role === 'ADMIN' || user.role === 'admin' || user.role === 'super_admin';
 }
 
-export function isExpertUser(user?: MockUser | null): boolean {
+export function isExpertUser(user?: MockUser | User | null): boolean {
   if (!user) return false;
   return user.role === 'EXPERT';
 }

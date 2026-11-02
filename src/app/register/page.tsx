@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (password !== confirm) {
@@ -24,7 +24,7 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const result = register({ fullName, email, password });
+    const result = await register({ fullName, email, password });
     setLoading(false);
     if (!result.ok) {
       setError(result.error);
@@ -64,11 +64,11 @@ export default function RegisterPage() {
             </label>
             <input
               type="text"
-              required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Liya Kebede"
-              className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:border-[#D4A373] transition-colors"
+              placeholder="e.g. Sara Tekle"
+              required
+              className="w-full bg-[#FDFBF7]/60 border border-[#EFEBE4] rounded-2xl px-5 py-3.5 text-sm outline-none focus:border-[#B85D43]/40 transition-colors"
             />
           </div>
 
@@ -78,25 +78,26 @@ export default function RegisterPage() {
             </label>
             <input
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:border-[#D4A373] transition-colors"
+              placeholder="e.g. sara@example.com"
+              required
+              className="w-full bg-[#FDFBF7]/60 border border-[#EFEBE4] rounded-2xl px-5 py-3.5 text-sm outline-none focus:border-[#B85D43]/40 transition-colors"
             />
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C302E]">
-              Password
+              Password (min 8 characters)
             </label>
             <input
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:border-[#D4A373] transition-colors"
+              placeholder="••••••••"
+              required
+              minLength={8}
+              className="w-full bg-[#FDFBF7]/60 border border-[#EFEBE4] rounded-2xl px-5 py-3.5 text-sm outline-none focus:border-[#B85D43]/40 transition-colors"
             />
           </div>
 
@@ -106,30 +107,34 @@ export default function RegisterPage() {
             </label>
             <input
               type="password"
-              required
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Type it again"
-              className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:border-[#D4A373] transition-colors"
+              placeholder="••••••••"
+              required
+              minLength={8}
+              className="w-full bg-[#FDFBF7]/60 border border-[#EFEBE4] rounded-2xl px-5 py-3.5 text-sm outline-none focus:border-[#B85D43]/40 transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-full bg-[#B85D43] text-white text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#9c4d37] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-[#2C302E] text-[#FDFBF7] py-4 rounded-2xl font-serif text-sm tracking-wide hover:bg-[#B85D43] transition-colors disabled:opacity-50"
           >
             <UserPlus className="w-4 h-4" />
-            {loading ? 'Creating…' : 'Create Account'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
-
-          <p className="text-center text-sm font-medium text-[#2C302E]/60 pt-2">
-            Already have an account?{' '}
-            <Link href="/signin" className="text-[#B85D43] font-bold hover:underline">
-              Sign in
-            </Link>
-          </p>
         </form>
+
+        <p className="mt-8 text-center text-xs font-medium text-[#2C302E]/60">
+          Already have an account?{' '}
+          <Link
+            href="/signin"
+            className="text-[#B85D43] underline underline-offset-4 font-semibold hover:opacity-80"
+          >
+            Sign in
+          </Link>
+        </p>
       </div>
     </main>
   );
