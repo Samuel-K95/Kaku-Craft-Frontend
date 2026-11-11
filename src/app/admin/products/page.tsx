@@ -2,11 +2,14 @@
 
 import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, PackageMinus, PackagePlus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Pencil, Trash2, PackageMinus, PackagePlus, UploadCloud } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { SlideOverForm, adminInputClass, adminLabelClass } from '@/components/admin/SlideOverForm';
 import { useAdminStore } from '@/context/AdminStoreContext';
+import { api, normalizeError } from '@/lib/api';
+import { ApiCategory, ApiProduct } from '@/types/products';
 import { AdminProduct, MockCategory, MockColor } from '@/types';
 
 type InnerTab = 'products' | 'categories' | 'colors';
@@ -28,9 +31,10 @@ const emptyProduct = (): AdminProduct => ({
 });
 
 export default function AdminProductsPage() {
+  const queryClient = useQueryClient();
   const {
-    products,
-    categories,
+    products: mockProducts,
+    categories: mockCategories,
     colors,
     users,
     upsertProduct,
@@ -51,6 +55,52 @@ export default function AdminProductsPage() {
   const [confirmDelete, setConfirmDelete] = useState<{ type: string; id: string; name: string } | null>(
     null
   );
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [formError, setFormError] = useState('');
+
+  // Live queries from backend
+  const { data: serverProducts = [] } = useQuery<ApiProduct[]>({
+    queryKey: ['admin-products'],
+    queryFn: () => api.get<ApiProduct[]>('/products/items/'),
+    staleTime: 30 * 1000,
+  });
+
+  const { data: serverCategories = [] } = useQuery<ApiCategory[]>({
+    queryKey: ['admin-categories'],
+    queryFn: () => api.get<ApiCategory[]>('/products/categories/'),
+    staleTime: 30 * 1000,
+  });
+
+  const products = useMemo(() => {
+    if (serverProducts.length > 0) {
+      return serverProducts.map((p) => ({
+        id: String(p.id),
+        name: p.name,
+        description: p.description,
+        price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
+        image: p.images?.[0]?.image || 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=900&auto=format&fit=crop',
+        hoverImage: p.images?.[1]?.image || p.images?.[0]?.image || 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=900&auto=format&fit=crop',
+        categoryId: String(p.category),
+        colorIds: [],
+        stock: p.status === 'out_of_stock' ? 0 : 5,
+        estimatedDays: 4,
+        assignedExpertId: null,
+        active: p.is_active && p.status === 'active',
+      }));
+    }
+    return mockProducts;
+  }, [serverProducts, mockProducts]);
+
+  const categories = useMemo(() => {
+    if (serverCategories.length > 0) {
+      return serverCategories.map((c) => ({
+        id: String(c.id),
+        name: c.name,
+        slug: c.slug,
+      }));
+    }
+    return mockCategories;
+  }, [serverCategories, mockCategories]);
 
   const categoryMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c])),
@@ -59,29 +109,81 @@ export default function AdminProductsPage() {
   const colorMap = useMemo(() => Object.fromEntries(colors.map((c) => [c.id, c])), [colors]);
   const expertMap = useMemo(() => Object.fromEntries(users.map((u) => [u.id, u])), [users]);
 
-  const saveProduct = (e: React.FormEvent) => {
+  // Mutations
+  const createProductMutation = useMutation({
+    mutationFn: async (p: AdminProduct) => {
+      const catId = parseInt(p.categoryId, 10);
+      const payload = {
+        name: p.name,
+        category: !isNaN(catId) ? catId : (serverCategories[0]?.id || 1),
+        description: p.description,
+        price: p.price,
+        size: 'One Size',
+        status: p.stock > 0 ? 'active' : 'out_of_stock',
+      };
+      const created = await api.post<ApiProduct>('/products/items/', payload);
+
+      if (imageFile && created.slug) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('is_primary', 'true');
+        await api.upload(`/products/items/${created.slug}/images/`, formData);
+      }
+      return created;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      void queryClient.invalidateQueries({ queryKey: ['products'] });
+      setEditing(null);
+      setImageFile(null);
+    },
+  });
+
+  const createCategoryMutation = useMutation({
+    mutationFn: (cat: { name: string; slug?: string }) =>
+      api.post<ApiCategory>('/products/categories/', {
+        name: cat.name,
+        description: '',
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      void queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setCatEdit(null);
+    },
+  });
+
+  const saveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editing || !editing.name || !editing.categoryId) return;
-    upsertProduct(editing);
-    setEditing(null);
+    setFormError('');
+    if (!editing || !editing.name) return;
+
+    try {
+      await createProductMutation.mutateAsync(editing);
+    } catch {
+      // Fallback to local store mutation
+      upsertProduct(editing);
+      setEditing(null);
+    }
   };
 
   return (
     <div>
       <AdminPageHeader
-        title="Products"
-        description="Create stock, edit items, manage categories and colors, and assign experts."
+        title="Products Studio"
+        description="Create stock, edit items, manage categories and colors, and assign artisans."
         actions={
           tab === 'products' ? (
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
                 setEditing({
                   ...emptyProduct(),
                   categoryId: categories[0]?.id || '',
                   assignedExpertId: experts[0]?.id || null,
-                })
-              }
+                });
+                setImageFile(null);
+                setFormError('');
+              }}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2C302E] text-white text-[10px] uppercase tracking-widest font-bold hover:bg-[#B85D43] transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -113,6 +215,7 @@ export default function AdminProductsPage() {
         }
       />
 
+      {/* Tabs */}
       <div className="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-[#EFEBE4]/85 border border-[#EFEBE4] mb-6">
         {(
           [
@@ -125,8 +228,8 @@ export default function AdminProductsPage() {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold ${
-              tab === id ? 'bg-[#B85D43] text-white' : 'text-[#2C302E]/70 hover:bg-[#FDFBF7]'
+            className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition-colors ${
+              tab === id ? 'bg-[#B85D43] text-white shadow-sm' : 'text-[#2C302E]/70 hover:bg-[#FDFBF7]'
             }`}
           >
             {label}
@@ -139,7 +242,7 @@ export default function AdminProductsPage() {
           {products.map((p) => (
             <div
               key={p.id}
-              className={`rounded-[28px] border border-[#EFEBE4] bg-[#FDFBF7] p-5 sm:p-6 hover:border-[#D4A373]/50 transition-all ${
+              className={`rounded-[28px] border border-[#EFEBE4] bg-[#FDFBF7] p-5 sm:p-6 hover:border-[#D4A373]/50 transition-all shadow-sm ${
                 !p.active ? 'opacity-60' : ''
               }`}
             >
@@ -152,7 +255,7 @@ export default function AdminProductsPage() {
                     <div>
                       <h3 className="font-serif text-xl font-bold text-[#2C302E]">{p.name}</h3>
                       <p className="text-xs font-medium text-[#2C302E]/50 mt-1">
-                        {categoryMap[p.categoryId]?.name || 'Uncategorized'} · ${p.price} ·{' '}
+                        {categoryMap[p.categoryId]?.name || 'Crochet Piece'} · ${p.price} ·{' '}
                         {p.estimatedDays} days ETA
                       </p>
                     </div>
@@ -178,7 +281,7 @@ export default function AdminProductsPage() {
                       Expert:{' '}
                       {p.assignedExpertId
                         ? expertMap[p.assignedExpertId]?.fullName || '—'
-                        : 'Unassigned'}
+                        : 'Addis Artisan'}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -222,45 +325,40 @@ export default function AdminProductsPage() {
       )}
 
       {tab === 'categories' && (
-        <div className="rounded-[28px] border border-[#EFEBE4] bg-[#FDFBF7] overflow-hidden">
+        <div className="rounded-[28px] border border-[#EFEBE4] bg-[#FDFBF7] overflow-hidden shadow-sm">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-[#EFEBE4] text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50">
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Slug</th>
-                <th className="px-6 py-4">Products</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map((c) => {
-                const count = products.filter((p) => p.categoryId === c.id).length;
-                return (
-                  <tr key={c.id} className="border-b border-[#EFEBE4]/70 last:border-0">
-                    <td className="px-6 py-4 font-serif text-lg font-bold">{c.name}</td>
-                    <td className="px-6 py-4 font-mono text-xs">{c.slug}</td>
-                    <td className="px-6 py-4 font-mono text-sm font-bold">{count}</td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => setCatEdit({ ...c })}
-                        className="px-3 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold border border-[#2C302E]/10 hover:bg-[#EFEBE4]"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setConfirmDelete({ type: 'category', id: c.id, name: c.name })
-                        }
-                        className="px-3 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold text-[#B85D43] border border-[#B85D43]/20"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {categories.map((c) => (
+                <tr key={c.id} className="border-b border-[#EFEBE4]/70 last:border-0">
+                  <td className="px-6 py-4 font-serif text-lg font-bold">{c.name}</td>
+                  <td className="px-6 py-4 font-mono text-xs">{c.slug}</td>
+                  <td className="px-6 py-4 text-right space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => setCatEdit({ ...c })}
+                      className="px-3 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold border border-[#2C302E]/10 hover:bg-[#EFEBE4]"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setConfirmDelete({ type: 'category', id: c.id, name: c.name })
+                      }
+                      className="px-3 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold text-[#B85D43] border border-[#B85D43]/20"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -271,7 +369,7 @@ export default function AdminProductsPage() {
           {colors.map((c) => (
             <div
               key={c.id}
-              className="rounded-[24px] border border-[#EFEBE4] bg-[#FDFBF7] p-5 flex items-center justify-between gap-3"
+              className="rounded-[24px] border border-[#EFEBE4] bg-[#FDFBF7] p-5 flex items-center justify-between gap-3 shadow-sm"
             >
               <div className="flex items-center gap-3">
                 <span
@@ -304,6 +402,7 @@ export default function AdminProductsPage() {
         </div>
       )}
 
+      {/* Slide-over Product Editor */}
       <SlideOverForm
         open={!!editing}
         title={editing && products.some((p) => p.id === editing.id) ? 'Edit Product' : 'New Product'}
@@ -312,6 +411,12 @@ export default function AdminProductsPage() {
       >
         {editing && (
           <form className="space-y-5" onSubmit={saveProduct}>
+            {formError && (
+              <div className="rounded-2xl bg-[#B85D43]/10 border border-[#B85D43]/20 px-4 py-3 text-xs font-bold text-[#B85D43]">
+                {formError}
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className={adminLabelClass}>Name</label>
               <input
@@ -332,9 +437,10 @@ export default function AdminProductsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className={adminLabelClass}>Price</label>
+                <label className={adminLabelClass}>Price ($)</label>
                 <input
                   type="number"
+                  step="0.01"
                   className={adminInputClass}
                   value={editing.price}
                   onChange={(e) => setEditing({ ...editing, price: Number(e.target.value) })}
@@ -356,97 +462,56 @@ export default function AdminProductsPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className={adminLabelClass}>Estimated Days</label>
-                <input
-                  type="number"
-                  className={adminInputClass}
-                  value={editing.estimatedDays}
-                  onChange={(e) =>
-                    setEditing({ ...editing, estimatedDays: Number(e.target.value) })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <label className={adminLabelClass}>Category</label>
-                <select
-                  className={adminInputClass}
-                  value={editing.categoryId}
-                  onChange={(e) => setEditing({ ...editing, categoryId: e.target.value })}
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
             <div className="space-y-2">
-              <label className={adminLabelClass}>Assign Expert</label>
+              <label className={adminLabelClass}>Category</label>
               <select
                 className={adminInputClass}
-                value={editing.assignedExpertId || ''}
-                onChange={(e) =>
-                  setEditing({ ...editing, assignedExpertId: e.target.value || null })
-                }
+                value={editing.categoryId}
+                onChange={(e) => setEditing({ ...editing, categoryId: e.target.value })}
               >
-                <option value="">Unassigned</option>
-                {experts.map((ex) => (
-                  <option key={ex.id} value={ex.id}>
-                    {ex.fullName}
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
               </select>
             </div>
+
             <div className="space-y-2">
-              <label className={adminLabelClass}>Colors</label>
-              <div className="flex flex-wrap gap-2">
-                {colors.map((c) => {
-                  const on = editing.colorIds.includes(c.id);
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() =>
-                        setEditing({
-                          ...editing,
-                          colorIds: on
-                            ? editing.colorIds.filter((id) => id !== c.id)
-                            : [...editing.colorIds, c.id],
-                        })
+              <label className={adminLabelClass}>Product Photo</label>
+              <div className="flex items-center gap-4">
+                <label className="cursor-pointer inline-flex items-center gap-2 border border-[#2C302E]/15 px-4 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#EFEBE4]">
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>Choose Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setImageFile(e.target.files[0]);
                       }
-                      className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                        on ? 'ring-2 ring-[#B85D43] scale-110 border-white' : 'border-black/10'
-                      }`}
-                      style={{ backgroundColor: c.hex }}
-                      title={c.name}
-                    />
-                  );
-                })}
+                    }}
+                  />
+                </label>
+                {imageFile && (
+                  <span className="text-xs font-mono text-[#52796F] truncate">{imageFile.name}</span>
+                )}
               </div>
             </div>
-            <div className="space-y-2">
-              <label className={adminLabelClass}>Image URL</label>
-              <input
-                className={adminInputClass}
-                value={editing.image}
-                onChange={(e) =>
-                  setEditing({ ...editing, image: e.target.value, hoverImage: e.target.value })
-                }
-              />
-            </div>
+
             <button
               type="submit"
-              className="w-full py-3.5 rounded-full bg-[#B85D43] text-white text-[10px] uppercase tracking-widest font-bold hover:bg-[#9c4d37]"
+              disabled={createProductMutation.isPending}
+              className="w-full py-3.5 rounded-full bg-[#B85D43] text-white text-[10px] uppercase tracking-widest font-bold hover:bg-[#9c4d37] transition-colors disabled:opacity-50"
             >
-              Save Product
+              {createProductMutation.isPending ? 'Saving...' : 'Save Product'}
             </button>
           </form>
         )}
       </SlideOverForm>
 
+      {/* Slide-over Category Editor */}
       <SlideOverForm
         open={!!catEdit}
         title="Category"
@@ -455,17 +520,18 @@ export default function AdminProductsPage() {
         {catEdit && (
           <form
             className="space-y-5"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              const slug =
-                catEdit.slug ||
-                catEdit.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-              upsertCategory({ ...catEdit, slug });
-              setCatEdit(null);
+              try {
+                await createCategoryMutation.mutateAsync({ name: catEdit.name });
+              } catch {
+                upsertCategory(catEdit);
+                setCatEdit(null);
+              }
             }}
           >
             <div className="space-y-2">
-              <label className={adminLabelClass}>Name</label>
+              <label className={adminLabelClass}>Category Name</label>
               <input
                 className={adminInputClass}
                 value={catEdit.name}
@@ -473,18 +539,10 @@ export default function AdminProductsPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <label className={adminLabelClass}>Slug</label>
-              <input
-                className={adminInputClass}
-                value={catEdit.slug}
-                onChange={(e) => setCatEdit({ ...catEdit, slug: e.target.value })}
-                placeholder="auto from name"
-              />
-            </div>
             <button
               type="submit"
-              className="w-full py-3.5 rounded-full bg-[#B85D43] text-white text-[10px] uppercase tracking-widest font-bold"
+              disabled={createCategoryMutation.isPending}
+              className="w-full py-3.5 rounded-full bg-[#B85D43] text-white text-[10px] uppercase tracking-widest font-bold disabled:opacity-50"
             >
               Save Category
             </button>
@@ -492,6 +550,7 @@ export default function AdminProductsPage() {
         )}
       </SlideOverForm>
 
+      {/* Slide-over Color Editor */}
       <SlideOverForm open={!!colorEdit} title="Color" onClose={() => setColorEdit(null)}>
         {colorEdit && (
           <form
@@ -542,7 +601,7 @@ export default function AdminProductsPage() {
         title="Delete"
         message={
           confirmDelete
-            ? `Delete "${confirmDelete.name}"? This cannot be undone in this mock session.`
+            ? `Delete "${confirmDelete.name}"?`
             : ''
         }
         confirmLabel="Delete"
