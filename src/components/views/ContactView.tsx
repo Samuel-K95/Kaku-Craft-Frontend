@@ -5,8 +5,11 @@
 
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
-import { Send, CheckCircle2, Mail, MapPin, Clock, UploadCloud, X } from 'lucide-react';
-import { ContactFormData } from '@/types';
+import Link from 'next/link';
+import { Send, CheckCircle2, Mail, MapPin, Clock, UploadCloud, X, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { api, normalizeError } from '@/lib/api';
+import { ApiCustomOrder } from '@/types/orders';
 
 const PRODUCT_TYPES = [
   'Cardigan',
@@ -27,15 +30,16 @@ interface InspirationPreview {
 }
 
 export const ContactView: React.FC = () => {
-  const [formData, setFormData] = useState<ContactFormData>({
-    fullName: '',
-    email: '',
-    category: 'Cardigan',
-    notes: ''
-  });
+  const { isAuthenticated } = useAuth();
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [category, setCategory] = useState('Cardigan');
+  const [notes, setNotes] = useState('');
 
   const [inspirationImages, setInspirationImages] = useState<InspirationPreview[]>([]);
-  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [createdOrder, setCreatedOrder] = useState<ApiCustomOrder | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const clearInspirationImages = () => {
@@ -71,19 +75,47 @@ export const ContactView: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setFormData({
-        fullName: '',
-        email: '',
-        category: 'Cardigan',
-        notes: ''
-      });
+    setErrorMsg('');
+
+    if (!notes.trim()) {
+      setErrorMsg('Please provide details or specifications for your request.');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setErrorMsg('Please sign in or create an account to submit a custom order request.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const description = `[Category: ${category}] Contact: ${fullName} (${email})\n\nDetails: ${notes.trim()}`;
+      const primaryImage = inspirationImages[0]?.file;
+
+      let res: ApiCustomOrder;
+      if (primaryImage) {
+        const formData = new FormData();
+        formData.append('description', description);
+        formData.append('reference_image', primaryImage);
+        res = await api.upload<ApiCustomOrder>('/orders/custom/', formData);
+      } else {
+        res = await api.post<ApiCustomOrder>('/orders/custom/', { description });
+      }
+
+      setCreatedOrder(res);
+      setFullName('');
+      setEmail('');
+      setCategory('Cardigan');
+      setNotes('');
       clearInspirationImages();
-      setSubmitted(false);
-    }, 4000);
+    } catch (err: unknown) {
+      setErrorMsg(normalizeError(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -140,103 +172,137 @@ export const ContactView: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Frosted Form Workspace */}
+          {/* Right Column: Dynamic Commission Form */}
           <div className="lg:col-span-7">
             <form 
               onSubmit={handleSubmit} 
-              className="space-y-6 bg-[#EFEBE4]/80 backdrop-blur-md p-8 md:p-12 rounded-[36px] border border-[#EFEBE4] shadow-sm"
+              className="p-8 sm:p-10 rounded-[32px] bg-[#EFEBE4]/90 backdrop-blur-md border border-[#EFEBE4] space-y-6"
             >
-              {submitted ? (
-                <div className="py-16 text-center space-y-3 animate-in fade-in zoom-in duration-300">
-                  <CheckCircle2 className="w-12 h-12 text-[#52796F] mx-auto" />
-                  <h3 className="font-serif text-2xl text-[#2C302E]">Request Sent Successfully</h3>
-                  <p className="text-xs text-[#2C302E]/70 max-w-sm mx-auto font-sans font-medium">
-                    Thank you, {formData.fullName || 'Customer'}. We will review your ideas and reply within 24 hours.
+              {createdOrder ? (
+                <div className="py-12 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-[#52796F]/10 text-[#52796F] flex items-center justify-center mx-auto mb-2">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h3 className="font-serif text-3xl text-[#2C302E]">
+                    Request Submitted!
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#2C302E]/70 max-w-md mx-auto font-medium">
+                    Your bespoke commission request (#{createdOrder.id}) has been sent directly to the studio. You can track progress and accept your artisan quote in your account portal.
                   </p>
+                  <div className="pt-4 flex items-center justify-center gap-4">
+                    <Link
+                      href="/account"
+                      className="inline-flex px-6 py-3 rounded-full bg-[#B85D43] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#A04D35] transition-colors"
+                    >
+                      View in My Account →
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setCreatedOrder(null)}
+                      className="inline-flex px-6 py-3 rounded-full bg-white/80 border border-[#EFEBE4] text-[#2C302E] text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors"
+                    >
+                      Submit Another
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <h3 className="font-serif text-2xl text-[#2C302E]">Custom Request</h3>
+                    <p className="text-xs text-[#2C302E]/60 font-medium">
+                      Fill out the form below to begin your bespoke order.
+                    </p>
+                  </div>
+
+                  {errorMsg && (
+                    <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  {!isAuthenticated && (
+                    <div className="p-4 rounded-2xl bg-[#D4A373]/10 border border-[#D4A373]/30 text-xs text-[#2C302E] flex items-center justify-between gap-3">
+                      <span>Please sign in to link your custom commission to your account.</span>
+                      <Link
+                        href="/signin"
+                        className="font-bold text-[#B85D43] underline shrink-0 hover:text-[#A04D35]"
+                      >
+                        Sign In →
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Name and Email */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C302E]">
-                        Full Name
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-[#2C302E]/70 font-mono">
+                        Your Name
                       </label>
                       <input 
-                        required 
                         type="text" 
-                        value={formData.fullName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                        placeholder="e.g. Liya Kebede" 
-                        className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-xs focus:outline-none focus:border-[#D4A373] text-[#2C302E] shadow-sm transition-colors font-medium" 
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="e.g. Sara Tekle" 
+                        className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-xs text-[#2C302E] placeholder-[#2C302E]/40 focus:outline-none focus:border-[#B85D43] transition-colors font-medium"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C302E]">
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-[#2C302E]/70 font-mono">
                         Email Address
                       </label>
                       <input 
-                        required 
                         type="email" 
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        placeholder="email@example.com" 
-                        className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-xs focus:outline-none focus:border-[#D4A373] text-[#2C302E] shadow-sm transition-colors font-medium" 
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="e.g. sara@example.com" 
+                        className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-xs text-[#2C302E] placeholder-[#2C302E]/40 focus:outline-none focus:border-[#B85D43] transition-colors font-medium"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C302E]">
-                      Product Type
+                  {/* Category Selection */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase font-bold tracking-widest text-[#2C302E]/70 font-mono">
+                      Item Category
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {PRODUCT_TYPES.map((type) => {
-                        const isActive = formData.category === type;
-                        return (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, category: type }))}
-                            className={`px-4 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-bold transition-all duration-300 ${
-                              isActive
-                                ? 'bg-[#B85D43] text-white shadow-sm'
-                                : 'bg-[#FDFBF7] text-[#2C302E]/70 border border-[#EFEBE4] hover:border-[#D4A373] hover:text-[#2C302E]'
-                            }`}
-                          >
-                            {type}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-xs text-[#2C302E] focus:outline-none focus:border-[#B85D43] transition-colors font-medium cursor-pointer"
+                    >
+                      {PRODUCT_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
+                  {/* Design Notes */}
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C302E]">
-                      Your Ideas & Details
+                    <label className="text-[10px] uppercase font-bold tracking-widest text-[#2C302E]/70 font-mono">
+                      Design Notes & Colors
                     </label>
                     <textarea 
-                      required 
-                      rows={5} 
-                      value={formData.notes}
-                      onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Tell us about the colors you want, your size, or what kind of doll you'd like..." 
-                      className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl p-4 text-xs focus:outline-none focus:border-[#D4A373] text-[#2C302E] shadow-sm transition-colors font-medium" 
+                      rows={4}
+                      required
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Describe colors, measurements, yarn preferences, or specific styling details..."
+                      className="w-full bg-[#FDFBF7] border border-[#EFEBE4] rounded-2xl px-4 py-3.5 text-xs text-[#2C302E] placeholder-[#2C302E]/40 focus:outline-none focus:border-[#B85D43] transition-colors resize-none font-medium leading-relaxed"
                     />
                   </div>
 
-                  {/* Inspiration photo upload */}
+                  {/* Photo Inspiration Upload */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C302E]">
-                        Inspiration Photos
-                      </label>
-                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#2C302E]/45">
-                        {inspirationImages.length}/{MAX_INSPIRATION_IMAGES}
-                      </span>
-                    </div>
-
-                    <p className="text-xs font-medium text-[#2C302E]/60">
+                    <label className="text-[10px] uppercase font-bold tracking-widest text-[#2C302E]/70 font-mono block">
+                      Inspiration Reference Photo
+                    </label>
+                    <p className="text-[11px] text-[#2C302E]/60 font-medium">
                       Upload pictures of styles, colors, or items you like. This helps us understand what you want.
                     </p>
 
@@ -244,7 +310,6 @@ export const ContactView: React.FC = () => {
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
-                      multiple
                       className="hidden"
                       onChange={handleInspirationUpload}
                     />
@@ -297,10 +362,20 @@ export const ContactView: React.FC = () => {
 
                   <button 
                     type="submit" 
-                    className="w-full py-4 rounded-full bg-[#2C302E] text-[#FDFBF7] text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#D4A373] transition-all duration-300 shadow-md flex items-center justify-center space-x-2 group"
+                    disabled={isSubmitting}
+                    className="w-full py-4 rounded-full bg-[#2C302E] text-[#FDFBF7] text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#D4A373] transition-all duration-300 shadow-md flex items-center justify-center space-x-2 group disabled:opacity-50"
                   >
-                    <span>Send Custom Request</span>
-                    <Send className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Submitting Request...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Custom Request</span>
+                        <Send className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
                 </>
               )}
