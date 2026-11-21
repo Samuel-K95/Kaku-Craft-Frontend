@@ -11,9 +11,10 @@ import { useCart } from '@/context/CartContext';
 interface ShopClientProps {
   initialProducts: Product[];
   initialCategories: ApiCategory[];
+  initialSearch?: string;
 }
 
-export default function ShopClient({ initialProducts, initialCategories }: ShopClientProps) {
+export default function ShopClient({ initialProducts, initialCategories, initialSearch }: ShopClientProps) {
   const router = useRouter();
   const { addToCart } = useCart();
 
@@ -39,6 +40,7 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
     <ShopView
       products={products || initialProducts}
       categories={categories}
+      initialSearch={initialSearch}
       onAddToCart={handleAddToCart}
       onSelectProduct={(p) => router.push(`/shop/${p.id}`)}
     />

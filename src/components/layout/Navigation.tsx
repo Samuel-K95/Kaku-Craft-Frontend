@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { CartDrawer } from '@/components/ui/CartDrawer';
+import { SearchModal } from '@/components/ui/SearchModal';
 import { NotificationMenu } from '@/components/layout/NotificationMenu';
 import { PRODUCTS } from '@/data/products'; // Mock data for now
 import { isAdminUser, isExpertUser } from '@/data/mockStore';
@@ -16,6 +17,7 @@ import { useCart } from '@/context/CartContext';
 
 export const Navigation: React.FC<{ cartCount?: number }> = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
   const {
@@ -119,7 +121,12 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
 
         {/* Right Utilities */}
         <div className="flex items-center space-x-6">
-          <button className="hidden sm:block text-[#2C302E]/80 hover:text-[#2C302E] transition-colors" aria-label="Search">
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            className="text-[#2C302E]/80 hover:text-[#B85D43] transition-colors p-1"
+            aria-label="Search Catalog"
+          >
             <Search className="w-5 h-5" />
           </button>
 
@@ -258,6 +265,12 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
           </div>
         )}
       </header>
+
+      {/* Realtime Search Modal Overlay */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
 
       {/* Slide-out Cart */}
       <CartDrawer 

@@ -4,7 +4,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
 import {
@@ -15,6 +15,7 @@ import {
 interface ShopViewProps {
   products: Product[];
   categories?: { id: string; label: string }[];
+  initialSearch?: string;
   onAddToCart: (product: Product) => void;
   onSelectProduct: (product: Product) => void;
 }
@@ -37,11 +38,13 @@ const DEFAULT_CATEGORIES: { id: string; label: string }[] = [
 export const ShopView: React.FC<ShopViewProps> = ({ 
   products, 
   categories,
+  initialSearch,
   onAddToCart, 
   onSelectProduct 
 }) => {
   const categoryList = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearch || '');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<string>('all');
@@ -49,6 +52,19 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const [isPending, startTransition] = useTransition();
 
   const filteredProducts = products.filter(p => {
+    // 0. Keyword Search Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matches =
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        (p.yarnType && p.yarnType.toLowerCase().includes(q)) ||
+        (p.tag && p.tag.toLowerCase().includes(q)) ||
+        (p.dimensions && p.dimensions.toLowerCase().includes(q));
+      if (!matches) return false;
+    }
+
     // 1. Category Filter
     if (selectedCategory !== 'all' && p.category !== selectedCategory) return false;
     
@@ -105,6 +121,45 @@ export const ShopView: React.FC<ShopViewProps> = ({
           <p className="text-xs sm:text-sm text-[#2C302E]/70 leading-relaxed font-sans max-w-lg mx-auto font-medium">
             Handmade crochet cardigans, sweaters, dolls, and bags. Beautifully made from Ethiopian wool and fine cotton.
           </p>
+        </div>
+
+        {/* In-Page Keyword Search Bar */}
+        <div className="max-w-md mx-auto mb-10">
+          <div className="relative flex items-center">
+            <Search className="w-4 h-4 text-[#D4A373] absolute left-4 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by keyword, wool, doll, cardigan, color..."
+              className="w-full bg-[#EFEBE4]/70 border border-[#EFEBE4] focus:border-[#B85D43]/40 rounded-full pl-11 pr-10 py-3 text-xs text-[#2C302E] placeholder-[#2C302E]/40 outline-none backdrop-blur-sm transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 p-1 text-[#2C302E]/40 hover:text-[#2C302E] rounded-full"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <div className="mt-2.5 text-center flex items-center justify-center gap-2 text-[11px] text-[#2C302E]/60">
+              <span>
+                Found <strong className="text-[#2C302E]">{filteredProducts.length}</strong> result{filteredProducts.length === 1 ? '' : 's'} for &ldquo;{searchQuery}&rdquo;
+              </span>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-[#B85D43] font-semibold underline underline-offset-2 hover:opacity-80"
+              >
+                Clear
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Category Filter Bar with Centered Container and Buttons */}
@@ -334,6 +389,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
                      setSelectedColor(null);
                      setPriceRange('all');
                      setAvailability('all');
+                     setSearchQuery('');
                    }}
                    className="mt-6 px-6 py-2 rounded-full bg-[#B85D43] text-white font-bold text-xs uppercase tracking-widest"
                  >
