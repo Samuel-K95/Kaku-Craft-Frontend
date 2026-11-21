@@ -21,6 +21,8 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { api, normalizeError } from '@/lib/api';
 import { ApiCustomOrder, ApiOrder, ApiPaymentProof } from '@/types/orders';
+import { ApiTelegramLink } from '@/types/notifications';
+import { Send } from 'lucide-react';
 
 type TabView = 'orders' | 'custom' | 'profile';
 
@@ -48,6 +50,20 @@ export default function AccountPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState('');
+
+  // Telegram Notifications Link State
+  const { data: telegramLink, refetch: refetchTelegram } = useQuery<ApiTelegramLink>({
+    queryKey: ['telegram-link'],
+    queryFn: () => api.get<ApiTelegramLink>('/notifications/telegram/link/'),
+    enabled: isAuthenticated,
+  });
+
+  const disconnectTelegramMutation = useMutation({
+    mutationFn: () => api.delete<ApiTelegramLink>('/notifications/telegram/link/'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['telegram-link'] });
+    },
+  });
   const [passwordError, setPasswordError] = useState('');
 
   // Queries for live standard and custom orders
@@ -709,6 +725,72 @@ export default function AccountPage() {
                       </button>
                     </div>
                   </form>
+                </div>
+
+                {/* TELEGRAM NOTIFICATIONS CARD */}
+                <div className="rounded-[28px] border border-[#EFEBE4] bg-[#FDFBF7] p-6 sm:p-8 space-y-6">
+                  <div className="flex items-center justify-between pb-5 border-b border-[#EFEBE4]">
+                    <div>
+                      <p className="font-mono text-xs font-bold tracking-widest uppercase text-[#2C302E]">
+                        Telegram Instant Alerts
+                      </p>
+                      <p className="text-xs font-medium text-[#2C302E]/60 mt-1">
+                        Receive instant push notifications on your phone whenever your order deposit is verified or custom quote is ready.
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-[#229ED9]/10 text-[#229ED9] flex items-center justify-center shrink-0">
+                      <Send className="w-5 h-5" />
+                    </div>
+                  </div>
+
+                  {telegramLink?.is_active ? (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#52796F]/10 border border-[#52796F]/20 text-xs">
+                      <div className="space-y-1">
+                        <p className="font-bold text-[#52796F] flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4" /> Connected to Telegram Bot (@{telegramLink.bot_username})
+                        </p>
+                        <p className="text-[11px] text-[#2C302E]/60">
+                          Active · Order progress alerts will be sent directly to your Telegram.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => disconnectTelegramMutation.mutate()}
+                        disabled={disconnectTelegramMutation.isPending}
+                        className="px-4 py-2 rounded-full border border-[#B85D43]/30 text-[#B85D43] text-[10px] font-bold tracking-widest uppercase hover:bg-[#B85D43] hover:text-white transition-colors shrink-0"
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#EFEBE4]/60 border border-[#EFEBE4]">
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-[#2C302E]">Connect Telegram Notifications</p>
+                        <p className="text-[11px] text-[#2C302E]/60">
+                          Tap below to open Telegram and start @{telegramLink?.bot_username || 'KakuCraftBot'}.
+                        </p>
+                      </div>
+                      {telegramLink?.deep_link ? (
+                        <a
+                          href={telegramLink.deep_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#229ED9] text-white text-[10px] font-bold tracking-widest uppercase hover:bg-[#1E8BC3] transition-colors shadow-sm shrink-0"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Open in Telegram</span>
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="px-6 py-3 rounded-full bg-[#2C302E]/20 text-white text-[10px] font-bold uppercase tracking-widest"
+                        >
+                          Loading link...
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
