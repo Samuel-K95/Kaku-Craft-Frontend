@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isAdminUser, isExpertUser } from '@/data/mockStore';
+import { SeededAccountsCard } from '@/components/auth/SeededAccountsCard';
 
 export default function SignInPage() {
   const { login } = useAuth();
@@ -14,6 +15,12 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleSelectAccount = (selectedEmail: string, selectedPassword: string) => {
+    setEmail(selectedEmail);
+    setPassword(selectedPassword);
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +39,7 @@ export default function SignInPage() {
 
   return (
     <main className="relative min-h-[80vh] py-16 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
-      <div className="max-w-md mx-auto relative z-10">
+      <div className="max-w-lg mx-auto relative z-10">
         <div className="text-center mb-10 space-y-3">
           <div className="inline-flex items-center text-[10px] uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 px-5 py-2 rounded-full border border-[#EFEBE4]">
             Welcome Back
@@ -102,6 +109,8 @@ export default function SignInPage() {
             Create one
           </Link>
         </p>
+
+        <SeededAccountsCard onSelectAccount={handleSelectAccount} selectedEmail={email} />
       </div>
     </main>
   );

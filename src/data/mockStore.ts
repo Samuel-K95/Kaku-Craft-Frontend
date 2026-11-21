@@ -36,12 +36,12 @@ export const MOCK_AUTHENTICATED_USER: MockUser = MOCK_USERS[2];
 
 export function isAdminUser(user?: MockUser | User | null): boolean {
   if (!user) return false;
-  return user.role === 'ADMIN' || user.role === 'admin' || user.role === 'super_admin';
+  return user.role === 'ADMIN' || user.role === 'admin' || user.role === 'super_admin' || user.role === 'system_admin';
 }
 
 export function isExpertUser(user?: MockUser | User | null): boolean {
   if (!user) return false;
-  return user.role === 'EXPERT';
+  return user.role === 'EXPERT' || user.role === 'expert';
 }
 
 export const MOCK_ORDERS: MockOrder[] = [

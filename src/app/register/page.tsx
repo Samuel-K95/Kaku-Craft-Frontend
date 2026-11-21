@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { SeededAccountsCard } from '@/components/auth/SeededAccountsCard';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -35,7 +36,7 @@ export default function RegisterPage() {
 
   return (
     <main className="relative min-h-[80vh] py-16 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
-      <div className="max-w-md mx-auto relative z-10">
+      <div className="max-w-lg mx-auto relative z-10">
         <div className="text-center mb-10 space-y-3">
           <div className="inline-flex items-center text-[10px] uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 px-5 py-2 rounded-full border border-[#EFEBE4]">
             Join Kaku Craft
@@ -135,6 +136,8 @@ export default function RegisterPage() {
             Sign in
           </Link>
         </p>
+
+        <SeededAccountsCard />
       </div>
     </main>
   );

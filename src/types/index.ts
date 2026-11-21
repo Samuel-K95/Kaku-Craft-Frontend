@@ -65,7 +65,7 @@ export interface MockUser {
   email: string;
   fullName: string;
   /** @deprecated prefer AdminRole via role field mapping */
-  role: AdminRole | 'customer' | 'admin' | 'super_admin';
+  role: AdminRole | 'user' | 'customer' | 'expert' | 'admin' | 'super_admin' | 'system_admin';
   avatarUrl?: string | null;
   joinedAt?: string;
   dateJoined?: string;
