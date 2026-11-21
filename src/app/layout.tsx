@@ -6,8 +6,7 @@ import { Cormorant_Garamond, Plus_Jakarta_Sans, Space_Mono } from 'next/font/goo
 import './globals.css';
 import { CustomCursor } from '@/components/ui/CustomCursor';
 import { FloatingYarnThreads } from '@/components/ui/FloatingYarnThreads';
-import { Navigation } from '@/components/layout/Navigation';
-import { Footer } from '@/components/layout/Footer';
+import { AppLayoutShell } from '@/components/layout/AppLayoutShell';
 import { AppProviders } from '@/components/providers/AppProviders';
 
 const cormorant = Cormorant_Garamond({
@@ -53,20 +52,12 @@ export default function RootLayout({
         <CustomCursor />
 
         <AppProviders>
-          <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative">
+          <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative flex flex-col">
             {/* Global 3D Organic Spun Yarn Filament Simulation */}
             <FloatingYarnThreads />
 
-            {/* Global Navigation */}
-            <Navigation cartCount={2} />
-
-            {/* Main Content Layered above the thread */}
-            <div className="relative z-10">
-              {children}
-            </div>
-
-            {/* Global Footer */}
-            <Footer />
+            {/* Layout Shell handles conditional Navigation & Footer */}
+            <AppLayoutShell>{children}</AppLayoutShell>
           </div>
         </AppProviders>
       </body>

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { UserPlus } from 'lucide-react';
+import { ArrowLeft, UserPlus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SeededAccountsCard } from '@/components/auth/SeededAccountsCard';
 
@@ -35,9 +35,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="relative min-h-[80vh] py-16 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
-      <div className="max-w-lg mx-auto relative z-10">
-        <div className="text-center mb-10 space-y-3">
+    <main className="relative min-h-screen w-full py-12 px-4 md:px-12 flex flex-col justify-center items-center text-[#2C302E]">
+      <div className="w-full max-w-lg mx-auto relative z-10">
+        <div className="mb-6 flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-[#2C302E]/60 hover:text-[#B85D43] transition-colors group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+            Back to Studio
+          </Link>
+          <span className="font-serif italic text-sm text-[#D4A373]">Kaku Craft</span>
+        </div>
+
+        <div className="text-center mb-8 space-y-2">
           <div className="inline-flex items-center text-[10px] uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 px-5 py-2 rounded-full border border-[#EFEBE4]">
             Join Kaku Craft
           </div>
