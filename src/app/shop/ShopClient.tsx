@@ -21,13 +21,14 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
   const { data: categoriesData } = useCategoriesQuery(initialCategories);
 
   const categories = React.useMemo(() => {
-    const list = [{ id: 'all', label: 'All Items' }];
     if (categoriesData && categoriesData.length > 0) {
+      const list = [{ id: 'all', label: 'All Items' }];
       categoriesData.forEach((c) => {
         list.push({ id: c.slug, label: c.name });
       });
+      return list;
     }
-    return list;
+    return undefined;
   }, [categoriesData]);
 
   const handleAddToCart = (product: Product) => {
