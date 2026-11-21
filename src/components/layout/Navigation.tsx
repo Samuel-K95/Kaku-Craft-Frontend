@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { CartDrawer } from '@/components/ui/CartDrawer';
+import { NotificationMenu } from '@/components/layout/NotificationMenu';
 import { PRODUCTS } from '@/data/products'; // Mock data for now
 import { isAdminUser, isExpertUser } from '@/data/mockStore';
 import { useAuth } from '@/context/AuthContext';
@@ -157,6 +158,8 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
               </Link>
             </div>
           )}
+
+            <NotificationMenu />
 
             <button 
               onClick={() => setIsCartOpen(true)}
