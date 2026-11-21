@@ -15,13 +15,42 @@ interface SearchModalProps {
 
 const POPULAR_SUGGESTIONS = [
   'Cardigans',
+  'Terracotta',
+  'Sage Green',
   'Mohair Wool',
   'Amigurumi Dolls',
   'Beanies & Hats',
+  'Ochre & Gold',
   'Handbags',
   'Sweaters',
-  'Keychains',
 ];
+
+const COLOR_NAME_MAP: Record<string, string[]> = {
+  terracotta: ['#B85D43'],
+  rust: ['#B85D43'],
+  brick: ['#B85D43'],
+  red: ['#B85D43'],
+  sage: ['#52796F', '#A3B19B', '#CCD5AE'],
+  green: ['#52796F', '#A3B19B', '#CCD5AE'],
+  olive: ['#52796F', '#2C302E'],
+  moss: ['#A3B19B'],
+  ochre: ['#D4A373', '#C2B8A3'],
+  camel: ['#D4A373'],
+  tan: ['#D4A373'],
+  gold: ['#D4A373'],
+  sand: ['#C2B8A3', '#D4A373'],
+  beige: ['#C2B8A3', '#D4A373'],
+  oatmeal: ['#C2B8A3', '#EFEBE4'],
+  cream: ['#FDFBF7', '#EFEBE4'],
+  white: ['#FDFBF7', '#EFEBE4'],
+  ivory: ['#FDFBF7', '#EFEBE4'],
+  charcoal: ['#2C302E'],
+  black: ['#2C302E'],
+  dark: ['#2C302E'],
+  blush: ['#E78EA9'],
+  pink: ['#E78EA9'],
+  rose: ['#E78EA9'],
+};
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const router = useRouter();
@@ -63,8 +92,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         
         // Also search static mock catalog for full offline fallback
         const lower = trimmed.toLowerCase();
+        const matchingHexes = COLOR_NAME_MAP[lower] || [];
         const localMatches = PRODUCTS.filter(
           (p) =>
+            (p.colorway && p.colorway.some((c) => matchingHexes.includes(c))) ||
             p.name.toLowerCase().includes(lower) ||
             p.description.toLowerCase().includes(lower) ||
             p.category.toLowerCase().includes(lower) ||

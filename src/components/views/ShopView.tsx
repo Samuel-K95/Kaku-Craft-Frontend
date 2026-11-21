@@ -35,6 +35,33 @@ const DEFAULT_CATEGORIES: { id: string; label: string }[] = [
   { id: 'baby', label: 'Baby Clothes' },
 ];
 
+const COLOR_NAME_MAP: Record<string, string[]> = {
+  terracotta: ['#B85D43'],
+  rust: ['#B85D43'],
+  brick: ['#B85D43'],
+  red: ['#B85D43'],
+  sage: ['#52796F', '#A3B19B', '#CCD5AE'],
+  green: ['#52796F', '#A3B19B', '#CCD5AE'],
+  olive: ['#52796F', '#2C302E'],
+  moss: ['#A3B19B'],
+  ochre: ['#D4A373', '#C2B8A3'],
+  camel: ['#D4A373'],
+  tan: ['#D4A373'],
+  gold: ['#D4A373'],
+  sand: ['#C2B8A3', '#D4A373'],
+  beige: ['#C2B8A3', '#D4A373'],
+  oatmeal: ['#C2B8A3', '#EFEBE4'],
+  cream: ['#FDFBF7', '#EFEBE4'],
+  white: ['#FDFBF7', '#EFEBE4'],
+  ivory: ['#FDFBF7', '#EFEBE4'],
+  charcoal: ['#2C302E'],
+  black: ['#2C302E'],
+  dark: ['#2C302E'],
+  blush: ['#E78EA9'],
+  pink: ['#E78EA9'],
+  rose: ['#E78EA9'],
+};
+
 export const ShopView: React.FC<ShopViewProps> = ({ 
   products, 
   categories,
@@ -52,10 +79,14 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const [isPending, startTransition] = useTransition();
 
   const filteredProducts = products.filter(p => {
-    // 0. Keyword Search Filter
+    // 0. Keyword & Color Search Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
+      const matchingHexes = COLOR_NAME_MAP[q] || [];
+      const hasMatchingColor = p.colorway && p.colorway.some(c => matchingHexes.includes(c));
+
       const matches =
+        hasMatchingColor ||
         p.name.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
