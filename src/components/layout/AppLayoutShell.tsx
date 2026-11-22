@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
+import { FaqAssistantWidget } from '@/components/cms/FaqAssistantWidget';
 
 export function AppLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,6 +30,7 @@ export function AppLayoutShell({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       {isCustomerPage && <Footer />}
+      {isCustomerPage && !isAuthPage && <FaqAssistantWidget />}
     </>
   );
 }

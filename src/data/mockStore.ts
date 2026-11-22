@@ -1,5 +1,4 @@
 import { MockUser, MockOrder, MockCustomOrder, MockMessage } from '@/types';
-import { User } from '@/types/auth';
 
 export const MOCK_USERS: MockUser[] = [
   {
@@ -28,21 +27,7 @@ export const MOCK_USERS: MockUser[] = [
   },
 ];
 
-/**
- * Mock signed-in user for the UI phase.
- * Switch index: [0] USER · [1] ADMIN · [2] EXPERT
- */
-export const MOCK_AUTHENTICATED_USER: MockUser = MOCK_USERS[2];
-
-export function isAdminUser(user?: MockUser | User | null): boolean {
-  if (!user) return false;
-  return user.role === 'ADMIN' || user.role === 'admin' || user.role === 'super_admin' || user.role === 'system_admin';
-}
-
-export function isExpertUser(user?: MockUser | User | null): boolean {
-  if (!user) return false;
-  return user.role === 'EXPERT' || user.role === 'expert';
-}
+export { isAdminUser, isExpertUser } from '@/lib/roles';
 
 export const MOCK_ORDERS: MockOrder[] = [
   {

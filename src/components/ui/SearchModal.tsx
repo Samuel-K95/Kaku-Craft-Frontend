@@ -7,6 +7,7 @@ import { Search, X, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Product } from '@/types';
 import { PRODUCTS } from '@/data/products';
 import { getLiveProducts } from '@/lib/products';
+import { formatEtb } from '@/lib/money';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -286,7 +287,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
                     <div className="text-right shrink-0 ml-4">
                       <span className="font-serif text-sm font-bold text-[#2C302E]">
-                        ${product.price}
+                        {formatEtb(product.price)}
                       </span>
                       <div className="text-[10px] text-[#B85D43] font-semibold flex items-center justify-end gap-1 group-hover:translate-x-0.5 transition-transform">
                         View <ArrowRight className="w-3 h-3" />

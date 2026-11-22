@@ -1,6 +1,5 @@
-// ============================================================================
-// components/views/LandingView.tsx
-// ============================================================================
+'use client';
+
 import React from 'react';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { InteractiveLineup } from '@/components/landing/InteractiveLineup';
@@ -9,22 +8,26 @@ import { Product } from '@/types';
 import { StudioBespokeCTA } from '../landing/StudioBespokeCTA';
 import { SpecialOccasions } from '@/components/landing/SpecialOccasions';
 import { NewArrivals } from '@/components/landing/NewArrivals';
+import { useCart } from '@/context/CartContext';
 
 interface LandingViewProps {
   products: Product[];
   onExploreClick: () => void;
   onSelectProduct: (product: Product) => void;
-  onBespokeClick: () => void; 
+  onBespokeClick: () => void;
 }
 
-export const LandingView: React.FC<LandingViewProps> = ({ 
-  products, 
-  onExploreClick, 
+export const LandingView: React.FC<LandingViewProps> = ({
+  products,
+  onExploreClick,
   onSelectProduct,
-  onBespokeClick
+  onBespokeClick,
 }) => {
-  const handleAddToCart = (product: Product) => {
-    alert(`Added ${product.name} to cart`);
+  const { addToCart, openCart } = useCart();
+
+  const handleAddToCart = async (product: Product) => {
+    await addToCart(product, 1);
+    openCart();
   };
 
   return (
@@ -32,9 +35,9 @@ export const LandingView: React.FC<LandingViewProps> = ({
       <HeroSection onExploreClick={onExploreClick} />
       <SpecialOccasions />
       <InteractiveLineup products={products} onSelectProduct={onSelectProduct} />
-      <NewArrivals 
-        products={products} 
-        onSelectProduct={onSelectProduct} 
+      <NewArrivals
+        products={products}
+        onSelectProduct={onSelectProduct}
         onAddToCart={handleAddToCart}
       />
       <CraftPillars />

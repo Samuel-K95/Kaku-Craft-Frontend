@@ -13,6 +13,8 @@ import {
   deliveryLabel,
   isInStock,
 } from '@/lib/stock';
+import { formatEtb } from '@/lib/money';
+import { WishlistButton } from '@/components/shop/WishlistButton';
 
 interface ProductCardProps {
   product: Product;
@@ -74,6 +76,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Warm Bottom Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#2C302E]/65 via-transparent to-transparent pointer-events-none z-10" />
 
+          <div className="absolute top-4 left-4 z-20">
+            <WishlistButton productId={product.id} className="w-8 h-8" />
+          </div>
+
           {/* Quick-Inspect Minimalist Badge */}
           <div 
             className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-[#FDFBF7]/90 text-[#2C302E] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-sm"
@@ -97,8 +103,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <h3 className="font-serif text-lg leading-tight text-[#2C302E] font-bold group-hover:text-[#B85D43] transition-colors line-clamp-2 flex-1">
               {product.name}
             </h3>
-            <span className="font-mono text-sm font-bold text-[#2C302E] mt-0.5">
-              ${product.price}
+            <span className="font-mono text-sm font-bold text-[#2C302E] mt-0.5 whitespace-nowrap">
+              {formatEtb(product.price)}
             </span>
           </div>
           <p className="text-[11px] text-[#2C302E]/70 line-clamp-2 leading-relaxed font-medium">

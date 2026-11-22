@@ -3,14 +3,19 @@
 // ============================================================================
 'use client';
 
-import React, { useState, useTransition } from 'react';
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState, useTransition } from 'react';
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
 import {
   AvailabilityFilter,
   isInStock,
 } from '@/lib/stock';
+import {
+  buildPricePresets,
+  formatEtb,
+  getPriceBounds,
+} from '@/lib/money';
 
 interface ShopViewProps {
   products: Product[];
@@ -34,6 +39,8 @@ const DEFAULT_CATEGORIES: { id: string; label: string }[] = [
   { id: 'socks', label: 'Socks & Booties' },
   { id: 'baby', label: 'Baby Clothes' },
 ];
+
+const SIZE_OPTIONS = ['Medium', 'Large', 'XL', 'XXL'] as const;
 
 const COLOR_NAME_MAP: Record<string, string[]> = {
   terracotta: ['#B85D43'],
@@ -62,28 +69,51 @@ const COLOR_NAME_MAP: Record<string, string[]> = {
   rose: ['#E78EA9'],
 };
 
-export const ShopView: React.FC<ShopViewProps> = ({ 
-  products, 
+export const ShopView: React.FC<ShopViewProps> = ({
+  products,
   categories,
   initialSearch,
-  onAddToCart, 
-  onSelectProduct 
+  onAddToCart,
+  onSelectProduct,
 }) => {
   const categoryList = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch || '');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [priceRange, setPriceRange] = useState<string>('all');
+  const [pricePresetId, setPricePresetId] = useState<string>('all');
+  const [rangeMin, setRangeMin] = useState(0);
+  const [rangeMax, setRangeMax] = useState(0);
   const [availability, setAvailability] = useState<AvailabilityFilter>('all');
   const [isPending, startTransition] = useTransition();
 
-  const filteredProducts = products.filter(p => {
-    // 0. Keyword & Color Search Filter
+  const priceBounds = useMemo(
+    () => getPriceBounds(products.map((p) => p.price)),
+    [products]
+  );
+
+  const pricePresets = useMemo(() => buildPricePresets(priceBounds), [priceBounds]);
+
+  useEffect(() => {
+    setRangeMin(priceBounds.min);
+    setRangeMax(priceBounds.max);
+    setPricePresetId('all');
+  }, [priceBounds.min, priceBounds.max]);
+
+  const activeFilterCount = [
+    selectedSize,
+    selectedColor,
+    availability !== 'all',
+    pricePresetId !== 'all' ||
+      rangeMin > priceBounds.min ||
+      rangeMax < priceBounds.max,
+  ].filter(Boolean).length;
+
+  const filteredProducts = products.filter((p) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const matchingHexes = COLOR_NAME_MAP[q] || [];
-      const hasMatchingColor = p.colorway && p.colorway.some(c => matchingHexes.includes(c));
+      const hasMatchingColor = p.colorway && p.colorway.some((c) => matchingHexes.includes(c));
 
       const matches =
         hasMatchingColor ||
@@ -96,23 +126,51 @@ export const ShopView: React.FC<ShopViewProps> = ({
       if (!matches) return false;
     }
 
-    // 1. Category Filter
     if (selectedCategory !== 'all' && p.category !== selectedCategory) return false;
-    
-    // 2. Color Filter (Mock: check if colorway includes selected color)
     if (selectedColor && !p.colorway.includes(selectedColor)) return false;
-
-    // 3. Price Filter
-    if (priceRange === 'under-50' && p.price >= 50) return false;
-    if (priceRange === '50-150' && (p.price < 50 || p.price > 150)) return false;
-    if (priceRange === 'over-150' && p.price <= 150) return false;
-
-    // 4. Availability (in stock vs pre-order)
+    if (p.price < rangeMin || p.price > rangeMax) return false;
     if (availability === 'in_stock' && !isInStock(p)) return false;
     if (availability === 'pre_order' && isInStock(p)) return false;
 
+    if (selectedSize) {
+      const variants = p.sizeVariants;
+      if (variants && variants.length > 0) {
+        const match = variants.find((v) => v.size === selectedSize);
+        if (!match || match.stock <= 0) return false;
+      }
+    }
+
     return true;
   });
+
+  const clearFilters = () => {
+    setSelectedSize(null);
+    setSelectedColor(null);
+    setPricePresetId('all');
+    setRangeMin(priceBounds.min);
+    setRangeMax(priceBounds.max);
+    setAvailability('all');
+  };
+
+  const applyPreset = (id: string) => {
+    const preset = pricePresets.find((p) => p.id === id);
+    if (!preset) return;
+    setPricePresetId(id);
+    setRangeMin(preset.min);
+    setRangeMax(preset.max);
+  };
+
+  const handleRangeMinChange = (value: number) => {
+    const next = Math.min(value, rangeMax);
+    setRangeMin(next);
+    setPricePresetId('custom');
+  };
+
+  const handleRangeMaxChange = (value: number) => {
+    const next = Math.max(value, rangeMin);
+    setRangeMax(next);
+    setPricePresetId('custom');
+  };
 
   const handleCategoryChange = (catId: string) => {
     startTransition(() => {
@@ -123,23 +181,20 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-    }
+    scrollContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-    }
+    scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
   };
 
+  const rangeSpan = Math.max(priceBounds.max - priceBounds.min, 1);
+  const minPct = ((rangeMin - priceBounds.min) / rangeSpan) * 100;
+  const maxPct = ((rangeMax - priceBounds.min) / rangeSpan) * 100;
+
   return (
-    // Shop Page Glass Layering - Using w-full and px-4 lg:px-8 for maximum width usage
     <main className="relative min-h-screen py-16 px-4 md:px-8 lg:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
       <div className="w-full max-w-[100vw] mx-auto relative z-10">
-        
-        {/* Editorial Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
           <div className="inline-flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-md px-5 py-2 rounded-full border border-[#EFEBE4]">
             <span>Our Products</span>
@@ -154,7 +209,6 @@ export const ShopView: React.FC<ShopViewProps> = ({
           </p>
         </div>
 
-        {/* In-Page Keyword Search Bar */}
         <div className="max-w-md mx-auto mb-10">
           <div className="relative flex items-center">
             <Search className="w-4 h-4 text-[#D4A373] absolute left-4 pointer-events-none" />
@@ -179,7 +233,8 @@ export const ShopView: React.FC<ShopViewProps> = ({
           {searchQuery && (
             <div className="mt-2.5 text-center flex items-center justify-center gap-2 text-[11px] text-[#2C302E]/60">
               <span>
-                Found <strong className="text-[#2C302E]">{filteredProducts.length}</strong> result{filteredProducts.length === 1 ? '' : 's'} for &ldquo;{searchQuery}&rdquo;
+                Found <strong className="text-[#2C302E]">{filteredProducts.length}</strong> result
+                {filteredProducts.length === 1 ? '' : 's'} for &ldquo;{searchQuery}&rdquo;
               </span>
               <span>•</span>
               <button
@@ -193,28 +248,23 @@ export const ShopView: React.FC<ShopViewProps> = ({
           )}
         </div>
 
-        {/* Scrollable Category Filter Bar with Centered Container and Buttons */}
         <div className="relative mb-12 flex items-center justify-center max-w-5xl mx-auto group">
-          
-          {/* Scroll Left Button */}
-          <button 
+          <button
             onClick={scrollLeft}
             className="absolute left-0 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-[#2C302E] hover:bg-[#FDFBF7] transition-all opacity-0 md:group-hover:opacity-100 -translate-x-4"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          
-          {/* Left Fade */}
+
           <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
-          
-          <div 
+
+          <div
             ref={scrollContainerRef}
             className="flex overflow-x-auto py-2 px-4 mx-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
           >
             <div className="inline-flex items-center space-x-2 p-1.5 rounded-full bg-[#EFEBE4]/85 border border-[#EFEBE4] backdrop-blur-lg shadow-sm shrink-0 min-w-max mx-auto">
               {categoryList.map((cat) => {
                 const isActive = selectedCategory === cat.id;
-
                 return (
                   <button
                     key={cat.id}
@@ -231,12 +281,10 @@ export const ShopView: React.FC<ShopViewProps> = ({
               })}
             </div>
           </div>
-          
-          {/* Right Fade */}
+
           <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
 
-          {/* Scroll Right Button */}
-          <button 
+          <button
             onClick={scrollRight}
             className="absolute right-0 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-[#2C302E] hover:bg-[#FDFBF7] transition-all opacity-0 md:group-hover:opacity-100 translate-x-4"
           >
@@ -244,163 +292,199 @@ export const ShopView: React.FC<ShopViewProps> = ({
           </button>
         </div>
 
-        {/* Layout: Sidebar Filters + Product Grid */}
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          {/* Sidebar Filters */}
-          <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
-            <div className="bg-[#EFEBE4]/40 p-5 rounded-[24px] border border-[#EFEBE4] backdrop-blur-sm sticky top-24">
-               <div className="flex items-center justify-between mb-6">
-                 <h3 className="font-serif text-2xl text-[#2C302E]">Filters</h3>
-                 <button 
-                   onClick={() => {
-                     setSelectedSize(null);
-                     setSelectedColor(null);
-                     setPriceRange('all');
-                     setAvailability('all');
-                   }}
-                   className="text-[10px] uppercase font-bold tracking-wider text-[#B85D43] hover:underline"
-                 >
-                   Clear All
-                 </button>
-               </div>
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
+          <aside className="w-full lg:w-[280px] flex-shrink-0">
+            <div className="sticky top-24 border border-[#E8E2D9] bg-[#FDFBF7]/90 backdrop-blur-md">
+              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[#E8E2D9]">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <SlidersHorizontal className="w-4 h-4 text-[#B85D43] shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-serif text-xl leading-none text-[#2C302E]">Refine</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-[#2C302E]/45 mt-1">
+                      {filteredProducts.length} of {products.length} pieces
+                    </p>
+                  </div>
+                </div>
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="text-[10px] uppercase font-bold tracking-[0.14em] text-[#B85D43] hover:underline shrink-0"
+                  >
+                    Reset ({activeFilterCount})
+                  </button>
+                )}
+              </div>
 
-               <div className="space-y-8">
-                 {/* Availability */}
-                 <div>
-                   <h4 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/70 mb-3">
-                     Availability
-                   </h4>
-                   <div className="space-y-3 text-sm font-bold text-[#2C302E]">
-                     {(
-                       [
-                         ['all', 'All Items'],
-                         ['in_stock', 'In Stock (1–2 days)'],
-                         ['pre_order', 'Pre-Order'],
-                       ] as const
-                     ).map(([value, label]) => (
-                       <label key={value} className="flex items-center space-x-3 cursor-pointer group">
-                         <input
-                           type="radio"
-                           name="availability"
-                           value={value}
-                           checked={availability === value}
-                           onChange={() => setAvailability(value)}
-                           className="w-4 h-4 accent-[#B85D43]"
-                         />
-                         <span className="group-hover:text-[#B85D43] transition-colors">{label}</span>
-                       </label>
-                     ))}
-                   </div>
-                   <p className="text-[10px] font-medium text-[#2C302E]/50 mt-3 leading-relaxed">
-                     In stock ships in 1–2 days. Out of stock can be pre-ordered with a make time.
-                   </p>
-                 </div>
+              <div className="divide-y divide-[#E8E2D9]">
+                <section className="px-5 py-5">
+                  <h4 className="text-[10px] uppercase font-bold tracking-[0.22em] text-[#2C302E]/55 mb-3">
+                    Availability
+                  </h4>
+                  <div className="space-y-2">
+                    {(
+                      [
+                        ['all', 'All items'],
+                        ['in_stock', 'Ready to ship'],
+                        ['pre_order', 'Pre-order'],
+                      ] as const
+                    ).map(([value, label]) => {
+                      const active = availability === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setAvailability(value)}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 text-left text-xs font-semibold transition-colors border ${
+                            active
+                              ? 'border-[#2C302E] bg-[#2C302E] text-white'
+                              : 'border-transparent bg-[#F3EFE8] text-[#2C302E]/75 hover:border-[#D4A373]/50'
+                          }`}
+                        >
+                          <span>{label}</span>
+                          {value === 'in_stock' && (
+                            <span className={`text-[9px] uppercase tracking-wider ${active ? 'text-white/70' : 'text-[#2C302E]/40'}`}>
+                              1–2 days
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
 
-                 {/* Size */}
-                 <div>
-                   <h4 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/70 mb-3">Size</h4>
-                   <div className="flex flex-wrap gap-2">
-                     {['XS', 'S', 'M', 'L', 'XL'].map(size => (
-                       <button 
-                         key={size}
-                         onClick={() => setSelectedSize(selectedSize === size ? null : size)}
-                         className={`w-9 h-9 rounded-full border text-xs font-bold transition-colors ${
-                           selectedSize === size 
-                             ? 'bg-[#2C302E] text-white border-[#2C302E]' 
-                             : 'border-[#2C302E]/20 text-[#2C302E] hover:bg-[#2C302E]/5'
-                         }`}
-                       >
-                         {size}
-                       </button>
-                     ))}
-                   </div>
-                 </div>
-                 
-                 {/* Color */}
-                 <div>
-                   <h4 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/70 mb-3">Color</h4>
-                   <div className="flex flex-wrap gap-3">
-                     {['#D4A373', '#2C302E', '#FDFBF7', '#B85D43', '#52796F', '#E78EA9', '#A3B19B', '#C2B8A3'].map(color => (
-                       <button 
-                         key={color} 
-                         onClick={() => setSelectedColor(selectedColor === color ? null : color)}
-                         className={`w-7 h-7 rounded-full border transition-all ${
-                           selectedColor === color 
-                             ? 'ring-2 ring-offset-2 ring-[#B85D43] scale-110' 
-                             : 'border-black/10 hover:scale-110'
-                         }`}
-                         style={{ backgroundColor: color }} 
-                         aria-label={`Filter by color ${color}`}
-                       />
-                     ))}
-                   </div>
-                 </div>
+                <section className="px-5 py-5">
+                  <div className="flex items-baseline justify-between mb-3">
+                    <h4 className="text-[10px] uppercase font-bold tracking-[0.22em] text-[#2C302E]/55">
+                      Price (ETB)
+                    </h4>
+                    <span className="font-mono text-[10px] font-bold text-[#2C302E]/70">
+                      {formatEtb(rangeMin)} – {formatEtb(rangeMax)}
+                    </span>
+                  </div>
 
-                 {/* Price */}
-                 <div>
-                   <h4 className="text-xs uppercase font-bold tracking-[0.2em] text-[#2C302E]/70 mb-3">Price Range</h4>
-                   <div className="space-y-3 text-sm font-bold text-[#2C302E]">
-                     <label className="flex items-center space-x-3 cursor-pointer group">
-                       <input 
-                         type="radio" 
-                         name="price" 
-                         value="all"
-                         checked={priceRange === 'all'}
-                         onChange={(e) => setPriceRange(e.target.value)}
-                         className="w-4 h-4 accent-[#B85D43] bg-white border-gray-300 focus:ring-[#B85D43]" 
-                       />
-                       <span className="group-hover:text-[#B85D43] transition-colors">All Prices</span>
-                     </label>
-                     <label className="flex items-center space-x-3 cursor-pointer group">
-                       <input 
-                         type="radio" 
-                         name="price" 
-                         value="under-50"
-                         checked={priceRange === 'under-50'}
-                         onChange={(e) => setPriceRange(e.target.value)}
-                         className="w-4 h-4 accent-[#B85D43] bg-white border-gray-300 focus:ring-[#B85D43]" 
-                       />
-                       <span className="group-hover:text-[#B85D43] transition-colors">Under $50</span>
-                     </label>
-                     <label className="flex items-center space-x-3 cursor-pointer group">
-                       <input 
-                         type="radio" 
-                         name="price" 
-                         value="50-150"
-                         checked={priceRange === '50-150'}
-                         onChange={(e) => setPriceRange(e.target.value)}
-                         className="w-4 h-4 accent-[#B85D43] bg-white border-gray-300 focus:ring-[#B85D43]" 
-                       />
-                       <span className="group-hover:text-[#B85D43] transition-colors">$50 - $150</span>
-                     </label>
-                     <label className="flex items-center space-x-3 cursor-pointer group">
-                       <input 
-                         type="radio" 
-                         name="price" 
-                         value="over-150"
-                         checked={priceRange === 'over-150'}
-                         onChange={(e) => setPriceRange(e.target.value)}
-                         className="w-4 h-4 accent-[#B85D43] bg-white border-gray-300 focus:ring-[#B85D43]" 
-                       />
-                       <span className="group-hover:text-[#B85D43] transition-colors">Over $150</span>
-                     </label>
-                   </div>
-                 </div>
-               </div>
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {pricePresets.map((preset) => {
+                      const active = pricePresetId === preset.id;
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => applyPreset(preset.id)}
+                          className={`px-2.5 py-1.5 text-[10px] font-bold tracking-wide border transition-colors ${
+                            active
+                              ? 'border-[#B85D43] bg-[#B85D43]/10 text-[#B85D43]'
+                              : 'border-[#E8E2D9] text-[#2C302E]/65 hover:border-[#D4A373]'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="relative h-8 mb-2">
+                    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#E8E2D9]" />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 h-[2px] bg-[#B85D43]"
+                      style={{ left: `${minPct}%`, width: `${Math.max(maxPct - minPct, 0)}%` }}
+                    />
+                    <input
+                      type="range"
+                      min={priceBounds.min}
+                      max={priceBounds.max}
+                      step={Math.max(1, Math.round(rangeSpan / 100))}
+                      value={rangeMin}
+                      onChange={(e) => handleRangeMinChange(Number(e.target.value))}
+                      className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#2C302E] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#2C302E] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white"
+                      aria-label="Minimum price in ETB"
+                    />
+                    <input
+                      type="range"
+                      min={priceBounds.min}
+                      max={priceBounds.max}
+                      step={Math.max(1, Math.round(rangeSpan / 100))}
+                      value={rangeMax}
+                      onChange={(e) => handleRangeMaxChange(Number(e.target.value))}
+                      className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#B85D43] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#B85D43] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white"
+                      aria-label="Maximum price in ETB"
+                    />
+                  </div>
+
+                  <div className="flex justify-between text-[10px] font-mono text-[#2C302E]/40">
+                    <span>{formatEtb(priceBounds.min)}</span>
+                    <span>{formatEtb(priceBounds.max)}</span>
+                  </div>
+                </section>
+
+                <section className="px-5 py-5">
+                  <h4 className="text-[10px] uppercase font-bold tracking-[0.22em] text-[#2C302E]/55 mb-3">
+                    Size
+                  </h4>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {SIZE_OPTIONS.map((size) => {
+                      const active = selectedSize === size;
+                      const short = size === 'Medium' ? 'M' : size === 'Large' ? 'L' : size;
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => setSelectedSize(active ? null : size)}
+                          className={`h-10 text-[11px] font-bold border transition-colors ${
+                            active
+                              ? 'bg-[#2C302E] text-white border-[#2C302E]'
+                              : 'border-[#E8E2D9] text-[#2C302E] hover:border-[#2C302E]/40'
+                          }`}
+                          aria-pressed={active}
+                          title={size}
+                        >
+                          {short}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section className="px-5 py-5">
+                  <h4 className="text-[10px] uppercase font-bold tracking-[0.22em] text-[#2C302E]/55 mb-3">
+                    Color
+                  </h4>
+                  <div className="flex flex-wrap gap-2.5">
+                    {['#D4A373', '#2C302E', '#FDFBF7', '#B85D43', '#52796F', '#E78EA9', '#A3B19B', '#C2B8A3'].map(
+                      (color) => {
+                        const active = selectedColor === color;
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setSelectedColor(active ? null : color)}
+                            className={`w-7 h-7 rounded-full border transition-transform ${
+                              active
+                                ? 'ring-2 ring-offset-2 ring-[#B85D43] scale-110'
+                                : 'border-black/10 hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: color }}
+                            aria-label={`Filter by color ${color}`}
+                            aria-pressed={active}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
+                </section>
+              </div>
             </div>
           </aside>
 
-          {/* Product Grid - Using more columns so items are smaller, maxed out at 4 columns */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {filteredProducts.length > 0 ? (
-              <div 
+              <div
                 className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isPending ? 'opacity-40' : 'opacity-100'
                 }`}
               >
                 {filteredProducts.map((product, idx) => (
-                  <ProductCard 
+                  <ProductCard
                     key={product.id}
                     product={product}
                     index={idx}
@@ -410,34 +494,33 @@ export const ShopView: React.FC<ShopViewProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <p className="font-serif text-2xl text-[#2C302E]">No items found.</p>
-                <p className="text-sm font-medium text-[#2C302E]/60 mt-2">Try adjusting your filters.</p>
-                <button 
-                   onClick={() => {
-                     setSelectedCategory('all');
-                     setSelectedSize(null);
-                     setSelectedColor(null);
-                     setPriceRange('all');
-                     setAvailability('all');
-                     setSearchQuery('');
-                   }}
-                   className="mt-6 px-6 py-2 rounded-full bg-[#B85D43] text-white font-bold text-xs uppercase tracking-widest"
-                 >
-                   Clear Filters
-                 </button>
+              <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#E8E2D9]">
+                <p className="font-serif text-2xl text-[#2C302E]">No items match these filters.</p>
+                <p className="text-sm font-medium text-[#2C302E]/60 mt-2">
+                  Try widening the price range or clearing size and color.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    clearFilters();
+                    setSearchQuery('');
+                  }}
+                  className="mt-6 px-6 py-2.5 bg-[#B85D43] text-white font-bold text-xs uppercase tracking-widest"
+                >
+                  Clear filters
+                </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Minimalist Footer Note */}
         <div className="mt-28 py-12 border-t border-[#EFEBE4] text-center space-y-2">
           <p className="font-serif text-2xl text-[#2C302E]">
             Looking for a custom design or specific size?
           </p>
           <p className="text-xs text-[#2C302E]/60 uppercase tracking-widest font-mono font-medium">
-            Handmade on demand in Addis Ababa • Worldwide Shipping
+            Handmade on demand in Addis Ababa • Prices in ETB
           </p>
         </div>
       </div>

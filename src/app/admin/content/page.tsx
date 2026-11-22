@@ -9,13 +9,14 @@ import { useAdminStore } from '@/context/AdminStoreContext';
 import { api, normalizeError } from '@/lib/api';
 import { ApiSiteContent } from '@/types/cms';
 import { ApiProduct } from '@/types/products';
+import { formatEtb } from '@/lib/money';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 const MAX_NEW_ARRIVALS = 4;
 
 export default function AdminContentPage() {
   const queryClient = useQueryClient();
-  const { cms, setCms, products: mockProducts } = useAdminStore();
+  const { cms, setCms } = useAdminStore();
   const [draft, setDraft] = useState(cms);
   const [statusMsg, setStatusMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -34,14 +35,14 @@ export default function AdminContentPage() {
     staleTime: 30 * 1000,
   });
 
-  const products = serverProducts.length > 0
-    ? serverProducts.map((p) => ({
-        id: String(p.id),
-        name: p.name,
-        price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
-        image: p.images?.[0]?.image || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800',
-      }))
-    : mockProducts;
+  const products = serverProducts.map((p) => ({
+    id: String(p.id),
+    name: p.name,
+    price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
+    image:
+      p.images?.[0]?.image ||
+      'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800',
+  }));
 
   const toggleArrival = (productId: string) => {
     setDraft((prev) => {
@@ -68,22 +69,36 @@ export default function AdminContentPage() {
       // 2. Persist to Backend CMS API
       const bannerPayload = {
         key: 'special-occasion-banner',
-        section: 'banner',
+        section: 'special_occasion',
         title: draft.specialOccasion.title,
         body: draft.specialOccasion.subtitle,
         data: {
           active: draft.specialOccasion.active,
           imageUrl: draft.specialOccasion.imageUrl,
-          newArrivalProductIds: draft.newArrivalProductIds,
         },
         is_published: draft.specialOccasion.active,
       };
+      const arrivalsPayload = {
+        key: 'new-arrivals',
+        section: 'new_arrivals',
+        title: 'New Arrivals',
+        body: '',
+        data: { newArrivalProductIds: draft.newArrivalProductIds },
+        is_published: true,
+      };
 
-      const existing = serverContent?.find((c) => c.key === 'special-occasion-banner');
-      if (existing) {
+      const existingBanner = serverContent?.find((c) => c.key === 'special-occasion-banner');
+      if (existingBanner) {
         await api.patch(`/cms/content/special-occasion-banner/`, bannerPayload);
       } else {
         await api.post(`/cms/content/`, bannerPayload);
+      }
+
+      const existingArrivals = serverContent?.find((c) => c.key === 'new-arrivals');
+      if (existingArrivals) {
+        await api.patch(`/cms/content/new-arrivals/`, arrivalsPayload);
+      } else {
+        await api.post(`/cms/content/`, arrivalsPayload);
       }
     },
     onSuccess: () => {
@@ -282,7 +297,7 @@ export default function AdminContentPage() {
                   <div className="p-3">
                     <p className="font-serif text-sm font-bold line-clamp-1">{p.name}</p>
                     <p className="font-mono text-xs font-bold text-[#2C302E]/60 mt-1">
-                      ${p.price}
+                      {formatEtb(p.price)}
                     </p>
                   </div>
                 </button>

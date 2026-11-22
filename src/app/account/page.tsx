@@ -17,14 +17,17 @@ import {
   X,
   Scissors,
   Check,
+  Heart,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { api, normalizeError } from '@/lib/api';
 import { ApiCustomOrder, ApiOrder, ApiPaymentProof } from '@/types/orders';
 import { ApiTelegramLink } from '@/types/notifications';
+import { ApiWishlistItem } from '@/types/reviews';
+import { InboxPanel } from '@/components/messaging/InboxPanel';
 import { Send } from 'lucide-react';
 
-type TabView = 'orders' | 'custom' | 'profile';
+type TabView = 'orders' | 'custom' | 'wishlist' | 'messages' | 'profile';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -72,6 +75,17 @@ export default function AccountPage() {
     queryFn: () => api.get<ApiOrder[]>('/orders/'),
     enabled: isAuthenticated,
     staleTime: 30 * 1000,
+  });
+
+  const { data: wishlist = [], isLoading: wishlistLoading } = useQuery<ApiWishlistItem[]>({
+    queryKey: ['wishlist'],
+    queryFn: () => api.get<ApiWishlistItem[]>('/reviews/wishlist/'),
+    enabled: isAuthenticated,
+  });
+
+  const removeWishlist = useMutation({
+    mutationFn: (productId: number) => api.delete(`/reviews/wishlist/${productId}/`),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['wishlist'] }),
   });
 
   const { data: myCustom = [], isLoading: customLoading } = useQuery<ApiCustomOrder[]>({
@@ -241,6 +255,8 @@ export default function AccountPage() {
   const tabs: { id: TabView; label: string; icon: typeof Package }[] = [
     { id: 'orders', label: 'My Orders', icon: Package },
     { id: 'custom', label: 'Custom Orders', icon: MessageCircle },
+    { id: 'wishlist', label: 'Wishlist', icon: Heart },
+    { id: 'messages', label: 'Messages', icon: MessageCircle },
     { id: 'profile', label: 'My Profile', icon: Settings },
   ];
 
@@ -439,6 +455,75 @@ export default function AccountPage() {
             )}
 
             {/* CUSTOM ORDERS TAB */}
+            {activeTab === 'messages' && (
+              <div className="space-y-4">
+                <h2 className="font-serif text-3xl">Messages</h2>
+                <InboxPanel allowCreate />
+              </div>
+            )}
+
+            {activeTab === 'wishlist' && (
+              <div className="space-y-4">
+                {wishlistLoading && (
+                  <p className="text-sm text-[#2C302E]/50">Loading wishlist…</p>
+                )}
+                {!wishlistLoading && wishlist.length === 0 && (
+                  <div className="rounded-[28px] border border-[#EFEBE4] bg-[#EFEBE4]/40 p-10 text-center">
+                    <p className="font-serif text-2xl">Your wishlist is empty.</p>
+                    <Link
+                      href="/shop"
+                      className="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold text-[#B85D43]"
+                    >
+                      Browse shop
+                    </Link>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {wishlist.map((item) => {
+                    const p = item.product_detail;
+                    const image =
+                      p?.images?.find((img) => img.is_primary)?.image ||
+                      p?.images?.[0]?.image ||
+                      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=800&q=80';
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-[28px] border border-[#EFEBE4] bg-[#FDFBF7] p-5 flex gap-4"
+                      >
+                        <div className="relative w-20 h-24 rounded-2xl overflow-hidden bg-[#EFEBE4] shrink-0">
+                          <Image src={image} alt={p?.name || 'Product'} fill className="object-cover" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-serif text-lg font-bold truncate">{p?.name || `Product #${item.product}`}</p>
+                          <p className="font-mono text-sm font-bold text-[#B85D43] mt-1">
+                            $
+                            {typeof p?.price === 'string'
+                              ? parseFloat(p.price).toFixed(2)
+                              : Number(p?.price || 0).toFixed(2)}
+                          </p>
+                          <div className="flex gap-2 mt-3">
+                            <Link
+                              href={`/shop/${item.product}`}
+                              className="px-3 py-1.5 rounded-full bg-[#2C302E] text-white text-[10px] uppercase tracking-widest font-bold"
+                            >
+                              View
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => removeWishlist.mutate(item.product)}
+                              className="px-3 py-1.5 rounded-full border border-[#B85D43]/30 text-[#B85D43] text-[10px] uppercase tracking-widest font-bold"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'custom' && (
               <div className="space-y-8">
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

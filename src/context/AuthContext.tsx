@@ -10,6 +10,7 @@ import {
   normalizeError,
   setStoredTokens,
 } from '@/lib/api';
+import { clearServerSession, establishServerSession } from '@/lib/auth-session';
 
 export type AuthUser = User;
 
@@ -46,9 +47,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const data = await api.get<BackendUserPayload>('/users/profile/');
       setUser(mapBackendUser(data));
+      // Re-assert httpOnly cookies after reload (role verified against Django).
+      await establishServerSession(tokens);
     } catch {
       setUser(null);
       clearStoredTokens();
+      await clearServerSession();
     } finally {
       setIsLoading(false);
     }
@@ -67,29 +71,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [refreshProfile]);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      if (!email.trim() || !password.trim()) {
-        return { ok: false as const, error: 'Please enter your email and password.' };
+  const login = useCallback(async (email: string, password: string) => {
+    if (!email.trim() || !password.trim()) {
+      return { ok: false as const, error: 'Please enter your email and password.' };
+    }
+
+    try {
+      const data = await api.post<LoginResponse>(
+        '/users/auth/signin/',
+        { email: email.trim(), password },
+        { requiresAuth: false }
+      );
+
+      setStoredTokens({ access: data.access, refresh: data.refresh });
+      const session = await establishServerSession({
+        access: data.access,
+        refresh: data.refresh,
+      });
+      if (!session.ok) {
+        clearStoredTokens();
+        return { ok: false as const, error: session.error };
       }
 
-      try {
-        const data = await api.post<LoginResponse>(
-          '/users/auth/signin/',
-          { email: email.trim(), password },
-          { requiresAuth: false }
-        );
-
-        setStoredTokens({ access: data.access, refresh: data.refresh });
-        const loggedInUser = mapBackendUser(data.user);
-        setUser(loggedInUser);
-        return { ok: true as const, user: loggedInUser };
-      } catch (err) {
-        return { ok: false as const, error: normalizeError(err) };
-      }
-    },
-    []
-  );
+      const loggedInUser = mapBackendUser(data.user);
+      setUser(loggedInUser);
+      return { ok: true as const, user: loggedInUser };
+    } catch (err) {
+      return { ok: false as const, error: normalizeError(err) };
+    }
+  }, []);
 
   const register = useCallback(
     async (data: { fullName: string; email: string; password: string }) => {
@@ -115,7 +125,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           { requiresAuth: false }
         );
 
-        // Auto-login upon successful registration
         return await login(email, password);
       } catch (err) {
         return { ok: false as const, error: normalizeError(err) };
@@ -125,6 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const logout = useCallback(() => {
+    void clearServerSession();
     clearStoredTokens();
     setUser(null);
   }, []);

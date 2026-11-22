@@ -12,21 +12,25 @@ import {
   FileText,
   Percent,
   LogOut,
+  Star,
+  MessageSquare,
 } from 'lucide-react';
-import { useAdminStore } from '@/context/AdminStoreContext';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV = [
   { href: '/admin/overview', label: 'Overview', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+  { href: '/admin/reviews', label: 'Reviews', icon: Star },
+  { href: '/admin/inbox', label: 'Inbox', icon: MessageSquare },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/discounts', label: 'Discounts', icon: Percent },
 ];
 
 export const AdminSidebar: React.FC = () => {
   const pathname = usePathname();
-  const { currentAdmin } = useAdminStore();
+  const { user } = useAuth();
 
   return (
     <aside className="w-full lg:w-72 shrink-0 self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)]">
@@ -34,18 +38,18 @@ export const AdminSidebar: React.FC = () => {
         <div className="flex items-center space-x-4 mb-8">
           <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4A373]/40 shadow-sm">
             <Image
-              src={currentAdmin.avatarUrl || 'https://i.pravatar.cc/150?img=68'}
-              alt={currentAdmin.fullName}
+              src={user?.avatarUrl || 'https://i.pravatar.cc/150?img=68'}
+              alt={user?.fullName || 'Admin'}
               fill
               className="object-cover"
             />
           </div>
           <div className="min-w-0">
             <p className="font-serif text-xl text-[#2C302E] font-bold truncate">
-              {currentAdmin.fullName}
+              {user?.fullName || 'Admin'}
             </p>
             <p className="text-[10px] uppercase tracking-widest font-bold text-[#B85D43]">
-              {currentAdmin.role}
+              {user?.role || 'admin'}
             </p>
           </div>
         </div>

@@ -8,34 +8,33 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { PeriodFilter, PeriodKey, getPeriodRange } from '@/components/admin/PeriodFilter';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { useAdminStore } from '@/context/AdminStoreContext';
 import { api } from '@/lib/api';
 import { ApiOrder } from '@/types/orders';
 import { ApiProduct } from '@/types/products';
 import { OrderStatus } from '@/types';
 
 export default function AdminOverviewPage() {
-  const { orders: mockOrders, products: mockProducts, users } = useAdminStore();
   const [period, setPeriod] = useState<PeriodKey>('1m');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
 
-  // Fetch live orders
-  const { data: serverOrders = [], isLoading: ordersLoading } = useQuery<ApiOrder[]>({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery<ApiOrder[]>({
     queryKey: ['admin-orders'],
     queryFn: () => api.get<ApiOrder[]>('/orders/'),
     staleTime: 15 * 1000,
   });
 
-  // Fetch live products
   const { data: serverProducts = [], isLoading: productsLoading } = useQuery<ApiProduct[]>({
     queryKey: ['admin-products'],
     queryFn: () => api.get<ApiProduct[]>('/products/items/'),
     staleTime: 30 * 1000,
   });
 
-  const orders = serverOrders.length > 0 ? serverOrders : (mockOrders as unknown as ApiOrder[]);
-  const hasLiveProducts = serverProducts.length > 0;
+  const { data: experts = [] } = useQuery({
+    queryKey: ['admin-experts'],
+    queryFn: () =>
+      api.get<{ id: number }[]>('/users/manage/?role=expert'),
+  });
 
   const { from, to } = getPeriodRange(period, customFrom, customTo);
 
@@ -65,19 +64,18 @@ export default function AdminOverviewPage() {
 
   // Determine low stock or out of stock items
   const lowStockItems = useMemo(() => {
-    if (hasLiveProducts) {
-      return serverProducts
-        .filter((p) => p.status === 'out_of_stock' || !p.is_active)
-        .map((p) => ({ id: String(p.id), name: p.name, stockNote: p.status === 'out_of_stock' ? 'Out of stock' : 'Inactive' }));
-    }
-    return mockProducts
-      .filter((p) => p.active && p.stock <= 3)
-      .map((p) => ({ id: p.id, name: p.name, stockNote: `${p.stock} left` }));
-  }, [hasLiveProducts, serverProducts, mockProducts]);
+    return serverProducts
+      .filter((p) => p.status === 'out_of_stock' || !p.is_active)
+      .map((p) => ({
+        id: String(p.id),
+        name: p.name,
+        stockNote: p.status === 'out_of_stock' ? 'Out of stock' : 'Inactive',
+      }));
+  }, [serverProducts]);
 
-  const activeProductsCount = hasLiveProducts
-    ? serverProducts.filter((p) => p.is_active && p.status === 'active').length
-    : mockProducts.filter((p) => p.active).length;
+  const activeProductsCount = serverProducts.filter(
+    (p) => p.is_active && p.status === 'active'
+  ).length;
 
   const statusBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
@@ -92,7 +90,7 @@ export default function AdminOverviewPage() {
     ['pending_payment', 'payment_submitted'].includes(o.status)
   );
 
-  const isLoading = ordersLoading && productsLoading && serverOrders.length === 0;
+  const isLoading = ordersLoading && productsLoading && orders.length === 0;
 
   return (
     <div>
@@ -167,8 +165,7 @@ export default function AdminOverviewPage() {
                 ))}
               </div>
               <p className="mt-6 text-xs font-medium text-[#2C302E]/50">
-                {users.filter((u) => u.role === 'EXPERT').length} experts ·{' '}
-                {activeProductsCount} active products
+                {experts.length} experts · {activeProductsCount} active products
               </p>
             </div>
 

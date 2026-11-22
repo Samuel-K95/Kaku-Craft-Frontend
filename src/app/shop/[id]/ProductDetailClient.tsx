@@ -13,6 +13,9 @@ import {
   deliveryLabel,
   isInStock,
 } from '@/lib/stock';
+import { formatEtb } from '@/lib/money';
+import { WishlistButton } from '@/components/shop/WishlistButton';
+import { ProductReviews } from '@/components/shop/ProductReviews';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -56,6 +59,9 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
               <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-md text-[#2C302E] text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full font-bold">
                 {product.tag}
               </div>
+              <div className="absolute top-4 right-4 z-20">
+                <WishlistButton productId={product.id} className="w-10 h-10" />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="relative w-full aspect-square bg-[#EFEBE4] rounded-2xl overflow-hidden">
@@ -88,7 +94,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
               </h1>
               
               <p className="font-mono text-2xl text-[#2C302E] font-bold">
-                ${product.price.toFixed(2)}
+                {formatEtb(product.price)}
               </p>
               
               <p className="text-sm text-[#2C302E]/80 leading-relaxed max-w-md font-medium">
@@ -204,6 +210,8 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
             </div>
           </div>
         </div>
+
+        <ProductReviews productId={product.id} />
 
         {/* BOTTOM SECTION: Related Items */}
         {relatedProducts.length > 0 && (

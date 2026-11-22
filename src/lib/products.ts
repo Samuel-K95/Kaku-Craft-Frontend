@@ -8,9 +8,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/a
 export function mapApiProductToUiProduct(p: ApiProduct): Product {
   const primaryImage = p.images?.find((img) => img.is_primary)?.image || p.images?.[0]?.image || 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=1200&q=80';
   const hoverImage = p.images?.find((img) => !img.is_primary)?.image || p.images?.[1]?.image || primaryImage;
+  const sizeVariants = (p.size_variants || []).map((v) => ({
+    size: v.size,
+    stock: v.stock_quantity,
+  }));
 
   return {
-    id: String(p.id),
+    id: p.slug || String(p.id),
     name: p.name,
     category: (p.category_slug as Exclude<ProductCategory, 'all'>) || 'cardigans',
     price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
@@ -21,11 +25,12 @@ export function mapApiProductToUiProduct(p: ApiProduct): Product {
     hoverImage: hoverImage,
     description: p.description || '',
     yarnType: 'Premium Wool Blend',
-    handcraftedHours: 14,
+    handcraftedHours: Math.max(4, Math.round((p.production_days || 14) * 0.8)),
     colorway: ['#D4A373', '#CCD5AE', '#EFEBE4'],
     dimensions: p.size || undefined,
-    stock: p.status === 'out_of_stock' ? 0 : 5,
-    productionDays: 4,
+    stock: typeof p.stock_quantity === 'number' ? p.stock_quantity : 0,
+    productionDays: typeof p.production_days === 'number' ? p.production_days : 14,
+    sizeVariants,
   };
 }
 
@@ -58,14 +63,16 @@ export async function getLiveProducts(params?: { category?: string; search?: str
       next: { revalidate: 60 },
     });
 
-    if (!res.ok) return PRODUCTS;
+    if (!res.ok) {
+      return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
+    }
     const data = (await res.json()) as ApiProduct[];
     if (!Array.isArray(data) || data.length === 0) {
-      return PRODUCTS;
+      return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
     }
     return data.map(mapApiProductToUiProduct);
   } catch {
-    return PRODUCTS;
+    return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
   }
 }
 
@@ -75,12 +82,13 @@ export async function getLiveProductByIdOrSlug(idOrSlug: string): Promise<Produc
       next: { revalidate: 60 },
     });
     if (!res.ok) {
-      const fallback = PRODUCTS.find((p) => p.id === idOrSlug);
-      return fallback || null;
+      if (process.env.NODE_ENV !== 'development') return null;
+      return PRODUCTS.find((p) => p.id === idOrSlug) || null;
     }
     const data = (await res.json()) as ApiProduct;
     return mapApiProductToUiProduct(data);
   } catch {
+    if (process.env.NODE_ENV !== 'development') return null;
     return PRODUCTS.find((p) => p.id === idOrSlug) || null;
   }
 }
@@ -115,7 +123,7 @@ export function useProductsQuery(filters?: { category?: string; search?: string 
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = (await res.json()) as ApiProduct[];
       if (!Array.isArray(data) || data.length === 0) {
-        return PRODUCTS;
+        return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
       }
       return data.map(mapApiProductToUiProduct);
     },

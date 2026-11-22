@@ -57,6 +57,12 @@ export interface ApiOrder {
   notes: string;
   items: ApiOrderItem[];
   payment_proofs: ApiPaymentProof[];
+  assigned_expert?: number | null;
+  assigned_expert_name?: string | null;
+  estimated_completion_days?: number | null;
+  expert_started_at?: string | null;
+  expert_completed_at?: string | null;
+  production_status?: 'not_started' | 'in_progress' | 'completed';
   created_at: string;
   updated_at: string;
 }

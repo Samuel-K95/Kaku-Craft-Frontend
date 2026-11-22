@@ -148,7 +148,7 @@ export default function RegisterPage() {
           </Link>
         </p>
 
-        <SeededAccountsCard />
+        {process.env.NODE_ENV === 'development' && <SeededAccountsCard />}
       </div>
     </main>
   );

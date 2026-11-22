@@ -72,35 +72,39 @@ export default function AdminProductsPage() {
   });
 
   const products = useMemo(() => {
-    if (serverProducts.length > 0) {
-      return serverProducts.map((p) => ({
-        id: String(p.id),
-        name: p.name,
-        description: p.description,
-        price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
-        image: p.images?.[0]?.image || 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=900&auto=format&fit=crop',
-        hoverImage: p.images?.[1]?.image || p.images?.[0]?.image || 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=900&auto=format&fit=crop',
-        categoryId: String(p.category),
-        colorIds: [],
-        stock: p.status === 'out_of_stock' ? 0 : 5,
-        estimatedDays: 4,
-        assignedExpertId: null,
-        active: p.is_active && p.status === 'active',
-      }));
-    }
-    return mockProducts;
-  }, [serverProducts, mockProducts]);
+    return serverProducts.map((p) => ({
+      id: String(p.id),
+      slug: p.slug,
+      name: p.name,
+      description: p.description,
+      price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
+      image:
+        p.images?.[0]?.image ||
+        'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=900&auto=format&fit=crop',
+      hoverImage:
+        p.images?.[1]?.image ||
+        p.images?.[0]?.image ||
+        'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=900&auto=format&fit=crop',
+      categoryId: String(p.category),
+      colorIds: [],
+      stock: typeof p.stock_quantity === 'number' ? p.stock_quantity : 0,
+      estimatedDays: typeof p.production_days === 'number' ? p.production_days : 14,
+      sizeVariants: (p.size_variants || []).map((v) => ({
+        size: v.size,
+        stock: v.stock_quantity,
+      })),
+      assignedExpertId: null,
+      active: p.is_active && p.status !== 'archived' && p.status !== 'draft',
+    }));
+  }, [serverProducts]);
 
   const categories = useMemo(() => {
-    if (serverCategories.length > 0) {
-      return serverCategories.map((c) => ({
-        id: String(c.id),
-        name: c.name,
-        slug: c.slug,
-      }));
-    }
-    return mockCategories;
-  }, [serverCategories, mockCategories]);
+    return serverCategories.map((c) => ({
+      id: String(c.id),
+      name: c.name,
+      slug: c.slug,
+    }));
+  }, [serverCategories]);
 
   const categoryMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c])),
@@ -113,13 +117,25 @@ export default function AdminProductsPage() {
   const createProductMutation = useMutation({
     mutationFn: async (p: AdminProduct) => {
       const catId = parseInt(p.categoryId, 10);
+      const perSize = Math.max(0, Math.floor(p.stock / 4));
+      const remainder = Math.max(0, p.stock - perSize * 4);
+      const sizes = ['Medium', 'Large', 'XL', 'XXL'] as const;
+      const size_variants = sizes.map((size, index) => ({
+        size,
+        stock_quantity: perSize + (index === 0 ? remainder : 0),
+      }));
       const payload = {
         name: p.name,
         category: !isNaN(catId) ? catId : (serverCategories[0]?.id || 1),
-        description: p.description,
+        description: p.description || `${p.name} — handcrafted by ከኩ craft.`,
         price: p.price,
-        size: 'One Size',
+        size: sizes.join(', '),
+        stock_quantity: p.stock,
+        production_days: p.estimatedDays || 14,
         status: p.stock > 0 ? 'active' : 'out_of_stock',
+        is_active: p.active,
+        social_links: { telegram: 'https://t.me/keku_craft' },
+        size_variants,
       };
       const created = await api.post<ApiProduct>('/products/items/', payload);
 
@@ -255,7 +271,7 @@ export default function AdminProductsPage() {
                     <div>
                       <h3 className="font-serif text-xl font-bold text-[#2C302E]">{p.name}</h3>
                       <p className="text-xs font-medium text-[#2C302E]/50 mt-1">
-                        {categoryMap[p.categoryId]?.name || 'Crochet Piece'} · ${p.price} ·{' '}
+                        {categoryMap[p.categoryId]?.name || 'Crochet Piece'} · {p.price.toLocaleString('en-US')} ETB ·{' '}
                         {p.estimatedDays} days ETA
                       </p>
                     </div>
@@ -437,7 +453,7 @@ export default function AdminProductsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className={adminLabelClass}>Price ($)</label>
+                <label className={adminLabelClass}>Price (ETB)</label>
                 <input
                   type="number"
                   step="0.01"

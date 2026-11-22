@@ -8,7 +8,19 @@ export type ProductCategory =
   | 'handbags'
   | 'beanies'
   | 'small-dolls'
-  | 'keychain-dolls';
+  | 'keychain-dolls'
+  | 'blankets'
+  | 'scarves'
+  | 'gloves'
+  | 'socks'
+  | 'baby';
+
+export type ProductSize = 'Medium' | 'Large' | 'XL' | 'XXL';
+
+export interface ProductSizeVariant {
+  size: ProductSize;
+  stock: number;
+}
 
 export interface Product {
   id: string;
@@ -33,6 +45,7 @@ export interface Product {
   stock: number;
   /** Days to make when out of stock (pre-order). */
   productionDays: number;
+  sizeVariants?: ProductSizeVariant[];
 }
 
 export interface FloatingYarnProps {
@@ -95,6 +108,7 @@ export interface MockColor {
 export interface AdminProduct {
   id: string;
   name: string;
+  slug?: string;
   description: string;
   price: number;
   image: string;
@@ -103,6 +117,7 @@ export interface AdminProduct {
   colorIds: string[];
   stock: number;
   estimatedDays: number;
+  sizeVariants?: ProductSizeVariant[];
   assignedExpertId: string | null;
   active: boolean;
   yarnType?: string;

@@ -7,7 +7,6 @@ import { Check, X, Eye, FileText, AlertCircle, Clock, CheckCircle2, Scissors } f
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { adminInputClass, adminLabelClass } from '@/components/admin/SlideOverForm';
-import { useAdminStore } from '@/context/AdminStoreContext';
 import { api, normalizeError } from '@/lib/api';
 import { ApiOrder, ApiPaymentProof } from '@/types/orders';
 import {
@@ -29,21 +28,28 @@ const STATUS_FILTERS: { id: OrderStatus | 'all'; label: string }[] = [
 
 export default function AdminOrdersPage() {
   const queryClient = useQueryClient();
-  const { orders: mockOrders, users } = useAdminStore();
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
   const [reviewProof, setReviewProof] = useState<{ order: ApiOrder; proof: ApiPaymentProof } | null>(null);
   const [adminNote, setAdminNote] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState('');
 
-  // Fetch live orders from Django REST API
-  const { data: serverOrders = [], isLoading } = useQuery<ApiOrder[]>({
+  const { data: orders = [], isLoading } = useQuery<ApiOrder[]>({
     queryKey: ['admin-orders'],
     queryFn: () => api.get<ApiOrder[]>('/orders/'),
     staleTime: 15 * 1000,
   });
 
-  const orders = serverOrders.length > 0 ? serverOrders : (mockOrders as unknown as ApiOrder[]);
+  const { data: experts = [] } = useQuery({
+    queryKey: ['admin-experts'],
+    queryFn: () => api.get<{ id: number; full_name: string; role: string }[]>('/users/manage/?role=expert'),
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (vars: { orderId: number; expertId: number }) =>
+      api.post(`/orders/${vars.orderId}/assign-expert/`, { expert_id: vars.expertId }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin-orders'] }),
+  });
 
   // Approve / Reject Proof Mutation
   const reviewMutation = useMutation({
@@ -170,6 +176,32 @@ export default function AdminOrdersPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge status={order.status as OrderStatus} />
                 </div>
+              </div>
+
+              <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-[#2C302E]/50">
+                  Assign expert
+                </label>
+                <select
+                  className={`${adminInputClass} max-w-xs`}
+                  value={order.assigned_expert ?? ''}
+                  onChange={(e) => {
+                    const expertId = Number(e.target.value);
+                    if (!expertId) return;
+                    assignMutation.mutate({ orderId: order.id, expertId });
+                  }}
+                >
+                  <option value="">
+                    {order.assigned_expert_name
+                      ? `Current: ${order.assigned_expert_name}`
+                      : 'Select expert…'}
+                  </option>
+                  {experts.map((ex) => (
+                    <option key={ex.id} value={ex.id}>
+                      {ex.full_name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Line Items */}

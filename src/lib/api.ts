@@ -35,6 +35,8 @@ export function clearStoredTokens(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(REFRESH_STORAGE_KEY);
+  // Fire-and-forget clear of httpOnly session cookies used by middleware.
+  void fetch('/api/auth/session', { method: 'DELETE' }).catch(() => undefined);
   window.dispatchEvent(new Event('auth:logout'));
 }
 
@@ -105,6 +107,12 @@ async function refreshAccessToken(): Promise<string | null> {
 
       const data = (await response.json()) as RefreshResponse;
       setStoredTokens({ access: data.access, refresh: tokens.refresh });
+      // Keep middleware cookies in sync with refreshed access token.
+      void fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access: data.access, refresh: tokens.refresh }),
+      }).catch(() => undefined);
       return data.access;
     } catch {
       clearStoredTokens();

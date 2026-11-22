@@ -3,17 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { AdminStoreProvider, useAdminStore } from '@/context/AdminStoreContext';
 import { Scissors } from 'lucide-react';
+import { RoleGate } from '@/components/auth/RoleGate';
 import { useAuth } from '@/context/AuthContext';
 
 function ExpertShell({ children }: { children: React.ReactNode }) {
-  const { users } = useAdminStore();
   const { user } = useAuth();
-  const expert =
-    users.find((u) => u.id === user?.id) ||
-    users.find((u) => u.role === 'EXPERT') ||
-    users[0];
 
   return (
     <main className="relative min-h-screen py-16 px-4 md:px-8 lg:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
@@ -35,14 +30,14 @@ function ExpertShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4 bg-[#EFEBE4]/50 border border-[#EFEBE4] rounded-[24px] px-5 py-4">
             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4A373]/40 shrink-0">
               <Image
-                src={expert.avatarUrl || 'https://i.pravatar.cc/150?img=12'}
-                alt={expert.fullName}
+                src={user?.avatarUrl || 'https://i.pravatar.cc/150?img=12'}
+                alt={user?.fullName || 'Expert'}
                 fill
                 className="object-cover"
               />
             </div>
             <div>
-              <p className="font-serif text-lg font-bold">{expert.fullName}</p>
+              <p className="font-serif text-lg font-bold">{user?.fullName || 'Expert'}</p>
               <p className="text-[10px] uppercase tracking-widest font-bold text-[#52796F]">
                 Expert
               </p>
@@ -64,8 +59,8 @@ function ExpertShell({ children }: { children: React.ReactNode }) {
 
 export default function ExpertLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AdminStoreProvider>
+    <RoleGate mode="expert">
       <ExpertShell>{children}</ExpertShell>
-    </AdminStoreProvider>
+    </RoleGate>
   );
 }

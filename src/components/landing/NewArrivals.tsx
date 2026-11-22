@@ -1,12 +1,12 @@
-// ============================================================================
-// components/landing/NewArrivals.tsx
-// ============================================================================
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ADMIN_CMS } from '@/data/admin/seed';
+import { api } from '@/lib/api';
+import { ApiSiteContent } from '@/types/cms';
 
 interface NewArrivalsProps {
   products: Product[];
@@ -19,7 +19,25 @@ export const NewArrivals: React.FC<NewArrivalsProps> = ({
   onSelectProduct,
   onAddToCart,
 }) => {
-  const selected = ADMIN_CMS.newArrivalProductIds
+  const { data: contents } = useQuery({
+    queryKey: ['cms-content'],
+    queryFn: () => api.get<ApiSiteContent[]>('/cms/content/', { requiresAuth: false }),
+    staleTime: 60 * 1000,
+  });
+
+  const ids = useMemo(() => {
+    const arrivals =
+      contents?.find((c) => c.key === 'new-arrivals') ||
+      contents?.find((c) => c.section === 'new_arrivals');
+    const banner = contents?.find((c) => c.key === 'special-occasion-banner');
+    const fromArrivals = (arrivals?.data?.newArrivalProductIds as string[] | undefined) || [];
+    const fromBanner = (banner?.data?.newArrivalProductIds as string[] | undefined) || [];
+    if (fromArrivals.length) return fromArrivals.map(String);
+    if (fromBanner.length) return fromBanner.map(String);
+    return ADMIN_CMS.newArrivalProductIds.map(String);
+  }, [contents]);
+
+  const selected = ids
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is Product => Boolean(p));
   const newProducts = selected.length > 0 ? selected : products.slice(0, 4);

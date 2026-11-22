@@ -16,6 +16,7 @@ import {
   deliveryLabel,
   isInStock,
 } from '@/lib/stock';
+import { formatEtb } from '@/lib/money';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -32,12 +33,56 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState('');
   const [transactionRef, setTransactionRef] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountPreview, setDiscountPreview] = useState<{
+    savings: number;
+    total: number;
+    code: string;
+  } | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const subtotal = totalPrice;
+  const payableTotal = discountPreview?.total ?? subtotal;
+  const payableDeposit = payableTotal * 0.5;
   const { maxDays, hasPreOrder } = cartMaxWaitDays(cartItems);
+
+  const applyDiscount = async () => {
+    setError('');
+    if (!discountCode.trim()) {
+      setDiscountPreview(null);
+      return;
+    }
+    try {
+      const productIds = cartItems
+        .map((i) => Number(i.product.id))
+        .filter((id) => !Number.isNaN(id));
+      const res = await api.post<{
+        savings?: string | number;
+        total?: string | number;
+        code: string;
+        valid?: boolean;
+      }>(
+        '/discounts/validate/',
+        { code: discountCode.trim(), product_ids: productIds },
+        { requiresAuth: false }
+      );
+      if (res.total !== undefined && res.savings !== undefined) {
+        setDiscountPreview({
+          code: res.code,
+          savings: typeof res.savings === 'string' ? parseFloat(res.savings) : res.savings,
+          total: typeof res.total === 'string' ? parseFloat(res.total) : res.total,
+        });
+      } else {
+        setDiscountPreview(null);
+        setError('Discount is valid but needs cart products to preview.');
+      }
+    } catch (err) {
+      setDiscountPreview(null);
+      setError(normalizeError(err));
+    }
+  };
 
   const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +103,7 @@ export default function CheckoutPage() {
       const order = await api.post<ApiOrder>('/orders/', {
         shipping_address: `${fullName} — ${address}`,
         notes: notes ? `${notes} (Contact: ${email})` : `Contact: ${email}`,
+        discount_code: discountCode.trim() || undefined,
       });
       setCreatedOrder(order);
       setStep(2);
@@ -90,7 +136,13 @@ export default function CheckoutPage() {
     try {
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('amount', depositRequired.toFixed(2));
+      formData.append(
+        'amount',
+        (createdOrder
+          ? Number(createdOrder.deposit_required ?? payableDeposit)
+          : payableDeposit
+        ).toFixed(2)
+      );
       formData.append('kind', 'deposit');
       if (transactionRef.trim()) {
         formData.append('note', `Ref: ${transactionRef.trim()}`);
@@ -223,6 +275,34 @@ export default function CheckoutPage() {
                   placeholder="+251 91 123 4567, apartment gate code, etc."
                 />
               </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs uppercase tracking-widest font-bold text-[#2C302E]/60">
+                  Discount Code
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    className="flex-1 bg-white/50 border border-[#2C302E]/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#D4A373] transition-colors"
+                    placeholder="e.g. spring-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void applyDiscount()}
+                    className="px-5 rounded-full bg-[#EFEBE4] border border-[#EFEBE4] text-[10px] uppercase tracking-widest font-bold hover:border-[#D4A373]"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {discountPreview && (
+                  <p className="text-xs font-medium text-[#52796F]">
+                    {discountPreview.code}: save {formatEtb(discountPreview.savings)} · new total{' '}
+                    {formatEtb(discountPreview.total)}
+                  </p>
+                )}
+              </div>
             </div>
 
             <button
@@ -242,7 +322,12 @@ export default function CheckoutPage() {
               <h1 className="font-serif text-4xl text-[#2C302E] mb-2">Secure Deposit</h1>
               <p className="text-sm text-[#2C302E]/60 font-medium">
                 Pay a 50% deposit now (
-                <strong className="text-[#B85D43]">${depositRequired.toFixed(2)}</strong>
+                <strong className="text-[#B85D43]">
+                  $
+                  {Number(
+                    createdOrder?.deposit_required ?? payableDeposit
+                  ).toFixed(2)}
+                </strong>
                 ). After we verify it, in-stock items ship in 1–2 days
                 {hasPreOrder ? `; pre-order items start making and take up to about ${maxDays} days` : ''}
                 . The remaining 50% is paid on delivery.
@@ -342,7 +427,7 @@ export default function CheckoutPage() {
                 Your deposit proof is under review by our Addis Ababa studio. Once verified,
                 in-stock items ship in 1–2 days
                 {hasPreOrder ? `, and pre-order pieces will be made (about ${maxDays} days)` : ''}
-                . The remaining balance (${(subtotal - depositRequired).toFixed(2)}) is paid upon delivery.
+                . The remaining balance ({formatEtb(payableTotal - payableDeposit)}) is paid upon delivery.
               </p>
             </div>
 
@@ -404,7 +489,7 @@ export default function CheckoutPage() {
                     {availabilityLabel(item.product)} · {deliveryLabel(item.product)}
                   </p>
                   <p className="font-mono font-bold text-sm">
-                    ${(item.product.price * item.quantity).toFixed(2)}
+                    {formatEtb(item.product.price * item.quantity)}
                   </p>
                 </div>
               </div>
@@ -414,19 +499,19 @@ export default function CheckoutPage() {
           <div className="space-y-3 font-mono text-sm text-[#2C302E] border-t border-[#2C302E]/10 pt-6">
             <div className="flex justify-between">
               <span className="text-[#2C302E]/60">Total Value</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>{formatEtb(subtotal)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg pt-2">
               <span>50% Deposit Due Now</span>
-              <span className="text-[#B85D43]">${depositRequired.toFixed(2)}</span>
+              <span className="text-[#B85D43]">{formatEtb(payableDeposit)}</span>
             </div>
           </div>
 
           <div className="mt-8 bg-[#EFEBE4]/50 p-4 rounded-xl flex gap-3 items-start border border-[#EFEBE4]">
             <Info className="w-5 h-5 text-[#B85D43] shrink-0 mt-0.5" />
             <p className="text-xs text-[#2C302E]/70 leading-relaxed font-medium">
-              {cartFulfillmentNote(cartItems)} Remaining 50% ($
-              {(subtotal - depositRequired).toFixed(2)}) is paid on delivery.
+              {cartFulfillmentNote(cartItems)} Remaining 50% (
+              {formatEtb(payableTotal - payableDeposit)}) is paid on delivery.
             </p>
           </div>
         </div>
