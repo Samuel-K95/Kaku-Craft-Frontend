@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Scissors, ArrowRight } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 interface HeroSectionProps {
   onExploreClick: () => void;
@@ -16,10 +17,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onExploreClick,
   yarnAssetSrc = '/images/crochet_yarn_needles.png'
 }) => {
+  const isMobile = useIsMobile();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, tiltX: 0, tiltY: 0 });
   const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (isMobile) {
+      setMousePos({ x: 0, y: 0, tiltX: 0, tiltY: 0 });
+      return;
+    }
     const handleMouseMove = (e: MouseEvent) => {
       if (!heroRef.current) return;
       const { innerWidth, innerHeight } = window;
@@ -37,12 +43,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section 
       ref={heroRef}
-      className="relative min-h-[95vh] flex flex-col justify-between items-center px-4 md:px-12 overflow-hidden bg-[#FDFBF7]/85 backdrop-blur-md select-none pt-4 border-b border-[#EFEBE4]/80"
+      className="relative min-h-[100svh] md:min-h-[95vh] flex flex-col justify-between items-center px-4 sm:px-6 md:px-12 overflow-hidden bg-[#FDFBF7]/85 backdrop-blur-md select-none pt-2 md:pt-4 border-b border-[#EFEBE4]/80"
     >
       {/* Micro-grain & Organic Tactile Grid Overlay */}
       <div className="absolute inset-0 opacity-[0.035] pointer-events-none bg-[radial-gradient(#2C302E_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -68,7 +74,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
 
       {/* --- MAIN HERO STAGE --- */}
-      <div className="relative w-full max-w-7xl mx-auto flex-1 flex items-center justify-center py-4 min-h-[520px] md:min-h-[640px]">
+      <div className="relative w-full max-w-7xl mx-auto flex-1 flex items-center justify-center py-2 md:py-4 min-h-[360px] sm:min-h-[480px] md:min-h-[640px]">
         
         {/* Layer 1: Giant Backdrop Typography */}
         <div 
@@ -113,7 +119,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          <div className="relative w-[320px] h-[320px] sm:w-[440px] sm:h-[440px] md:w-[540px] md:h-[540px] lg:w-[620px] lg:h-[620px]">
+          <div className="relative w-[min(280px,78vw)] h-[min(280px,78vw)] sm:w-[440px] sm:h-[440px] md:w-[540px] md:h-[540px] lg:w-[620px] lg:h-[620px]">
             <div 
               className="absolute bottom-4 sm:bottom-8 left-1/2 w-[85%] h-12 bg-[#2C302E]/35 rounded-[100%] filter blur-2xl transform scale-y-50 -z-10 transition-transform duration-150"
               style={{
@@ -152,18 +158,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
 
       {/* --- BOTTOM CALL-TO-ACTION & METADATA BAR --- */}
-      <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center pb-8 border-t border-[#EFEBE4] pt-6 gap-4 sm:gap-0">
-        <div className="flex items-center space-x-3">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#52796F]" />
-          <p className="text-xs tracking-wider uppercase font-semibold text-[#2C302E]">
-            Hand-crocheted in Addis Ababa • Global Dispatch
+      <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center pb-6 md:pb-8 border-t border-[#EFEBE4] pt-5 md:pt-6 gap-4 sm:gap-0">
+        <div className="flex items-center space-x-3 text-center sm:text-left">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#52796F] shrink-0" />
+          <p className="text-[10px] sm:text-xs tracking-wider uppercase font-semibold text-[#2C302E]">
+            Hand-crocheted in Addis Ababa · Global Dispatch
           </p>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center w-full sm:w-auto justify-center">
           <button 
             onClick={onExploreClick} 
-            className="px-8 py-3.5 rounded-full bg-[#2C302E] text-[#FDFBF7] text-xs uppercase tracking-[0.2em] font-medium hover:bg-[#D4A373] transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-3 group"
+            className="w-full sm:w-auto justify-center px-7 sm:px-8 py-3.5 rounded-full bg-[#2C302E] text-[#FDFBF7] text-xs uppercase tracking-[0.2em] font-medium hover:bg-[#D4A373] transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-3 group"
           >
             <span>Explore Collection</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -45,7 +45,7 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
   return (
     <>
       <header className="sticky top-0 z-50 backdrop-blur-md bg-[#EFEBE4] border-b border-[#EFEBE4] transition-all duration-300 select-none">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-16 sm:h-20 flex items-center justify-between">
           
           {/* Left Navigation */}
           <div className="flex items-center space-x-8">
@@ -104,23 +104,23 @@ export const Navigation: React.FC<{ cartCount?: number }> = () => {
           {/* Brand Crest */}
           <Link 
             href="/"
-            className="cursor-pointer flex items-center space-x-3 group"
+            className="cursor-pointer flex items-center space-x-2 sm:space-x-3 group"
           >
-            <div className="relative w-10 h-10 rounded-full bg-[#FDFBF7] flex items-center justify-center border border-[#D4A373]/50 group-hover:scale-105 transition-transform duration-500 shadow-sm">
-              <span className="font-serif font-black text-lg tracking-tighter text-[#1C4E4F]">ከኩ</span>
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FDFBF7] flex items-center justify-center border border-[#D4A373]/50 group-hover:scale-105 transition-transform duration-500 shadow-sm">
+              <span className="font-serif font-black text-base sm:text-lg tracking-tighter text-[#1C4E4F]">ከኩ</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-serif text-xl tracking-[0.15em] font-bold text-[#2C302E] leading-none">
+              <span className="font-serif text-lg sm:text-xl tracking-[0.15em] font-bold text-[#2C302E] leading-none">
                 KAKU
               </span>
-              <span className="font-sans text-[9px] tracking-[0.35em] text-[#D4A373] uppercase font-bold">
+              <span className="font-sans text-[8px] sm:text-[9px] tracking-[0.3em] sm:tracking-[0.35em] text-[#D4A373] uppercase font-bold">
                 Craft • Studio
               </span>
             </div>
           </Link>
 
         {/* Right Utilities */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-3 sm:space-x-6">
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}

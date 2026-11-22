@@ -7,17 +7,22 @@ import {
   TIKTOK_SPOTLIGHT_CLIPS,
   tiktokEmbedSrc,
 } from '@/data/tiktokSpotlight';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 const CLIPS = TIKTOK_SPOTLIGHT_CLIPS;
 const N = CLIPS.length;
 
 export const TikTokSpotlight: React.FC = () => {
+  const isMobile = useIsMobile();
   const containerRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [manualIndex, setManualIndex] = useState<number | null>(null);
+  const [mobileIndex, setMobileIndex] = useState(0);
   const lockProgressRef = useRef(0);
 
   const handleScroll = useCallback(() => {
+    if (isMobile) return;
     const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -25,7 +30,7 @@ export const TikTokSpotlight: React.FC = () => {
     if (total <= 0) return;
     const raw = -rect.top / total;
     setProgress(Math.min(1, Math.max(0, raw)));
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -38,17 +43,25 @@ export const TikTokSpotlight: React.FC = () => {
   }, [handleScroll]);
 
   const scrollIndex = Math.min(N - 1, Math.floor(progress * N * 0.999));
-  const activeIndex = manualIndex ?? scrollIndex;
+  const activeIndex = isMobile ? mobileIndex : (manualIndex ?? scrollIndex);
 
   useEffect(() => {
-    if (manualIndex !== null && Math.abs(progress - lockProgressRef.current) > 0.06) {
+    if (isMobile || manualIndex === null) return;
+    if (Math.abs(progress - lockProgressRef.current) > 0.06) {
       setManualIndex(null);
     }
-  }, [progress, manualIndex]);
+  }, [progress, manualIndex, isMobile]);
 
   const lockTo = (index: number) => {
+    const next = Math.min(N - 1, Math.max(0, index));
+    if (isMobile) {
+      setMobileIndex(next);
+      const card = trackRef.current?.querySelector<HTMLElement>(`[data-index="${next}"]`);
+      card?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      return;
+    }
     lockProgressRef.current = progress;
-    setManualIndex(Math.min(N - 1, Math.max(0, index)));
+    setManualIndex(next);
   };
 
   const goPrev = () => lockTo(activeIndex - 1);
@@ -57,14 +70,118 @@ export const TikTokSpotlight: React.FC = () => {
   const segmentSize = 1 / N;
   const localT = Math.min(1, Math.max(0, (progress - activeIndex * segmentSize) / segmentSize));
 
+  const header = (
+    <div className="relative z-20 px-4 sm:px-6 md:px-12 pt-8 md:pt-10 flex flex-col md:flex-row md:items-end justify-between gap-4 max-w-7xl mx-auto w-full">
+      <div className="space-y-2">
+        <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#B85D43]">
+          Studio Spotlight · 0{activeIndex + 1} / 0{N}
+        </p>
+        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#2C302E] leading-none tracking-tight">
+          Stitches in <span className="italic font-normal text-[#B85D43]">motion.</span>
+        </h2>
+        <p className="text-xs sm:text-sm text-[#2C302E]/60 max-w-md font-medium leading-relaxed">
+          {isMobile
+            ? 'Swipe the reels sideways — tap View more for the full TikTok feed.'
+            : 'Scroll to move through the reels — or use the arrows. Full feed lives on TikTok.'}
+        </p>
+      </div>
+      <a
+        href={TIKTOK_PROFILE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 self-start md:self-auto px-5 py-2.5 rounded-full bg-[#2C302E] text-[#FDFBF7] text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#B85D43] transition-colors"
+      >
+        View more on TikTok
+        <ExternalLink className="w-3.5 h-3.5" />
+      </a>
+    </div>
+  );
+
+  // ——— Mobile: compact horizontal snap carousel (no sticky scroll hijack) ———
+  if (isMobile) {
+    return (
+      <section className="relative w-full py-12 border-y border-[#EFEBE4]/80 bg-transparent overflow-x-hidden">
+        {header}
+        <div className="mt-8 relative">
+          <div
+            ref={trackRef}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              const card = el.querySelector<HTMLElement>('[data-spotlight-card]');
+              if (!card) return;
+              const idx = Math.round(el.scrollLeft / (card.offsetWidth + 16));
+              setMobileIndex(Math.min(N - 1, Math.max(0, idx)));
+            }}
+          >
+            {CLIPS.map((clip, index) => (
+              <article
+                key={clip.id}
+                data-spotlight-card
+                data-index={index}
+                className="relative shrink-0 w-[min(300px,82vw)] snap-center"
+              >
+                <div className="relative rounded-[28px] overflow-hidden border border-[#D4A373]/50 bg-[#FDFBF7] shadow-md">
+                  <iframe
+                    src={tiktokEmbedSrc(clip.id)}
+                    title={clip.title}
+                    className="w-full h-[460px] bg-[#EFEBE4]"
+                    allow="encrypted-media; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                </div>
+                <p className="mt-3 text-center text-[11px] font-mono uppercase tracking-[0.18em] text-[#2C302E]/55">
+                  {clip.title}
+                </p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-6 flex items-center justify-center gap-3 px-4">
+            <button
+              type="button"
+              onClick={goPrev}
+              disabled={activeIndex === 0}
+              aria-label="Previous clip"
+              className="w-10 h-10 rounded-full border border-[#2C302E]/15 bg-[#FDFBF7] flex items-center justify-center disabled:opacity-30"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="flex gap-1.5">
+              {CLIPS.map((clip, i) => (
+                <button
+                  key={clip.id}
+                  type="button"
+                  aria-label={`Go to clip ${i + 1}`}
+                  onClick={() => lockTo(i)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === activeIndex ? 'w-6 bg-[#B85D43]' : 'w-1.5 bg-[#2C302E]/20'
+                  }`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={goNext}
+              disabled={activeIndex === N - 1}
+              aria-label="Next clip"
+              className="w-10 h-10 rounded-full border border-[#2C302E]/15 bg-[#FDFBF7] flex items-center justify-center disabled:opacity-30"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ——— Desktop: sticky scroll theater ———
   return (
     <section
       ref={containerRef}
-      className="relative w-full h-[280vh] bg-transparent border-y border-[#EFEBE4]/80"
+      className="relative w-full h-[220vh] bg-transparent border-y border-[#EFEBE4]/80"
     >
-      {/* Transparent sticky stage so floating yarns stay visible behind */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col bg-transparent">
-        {/* Soft theme wash only — no solid fill */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -75,39 +192,15 @@ export const TikTokSpotlight: React.FC = () => {
           }}
         />
 
-        {/* Header */}
-        <div className="relative z-20 px-4 md:px-12 pt-8 md:pt-10 flex flex-col md:flex-row md:items-end justify-between gap-4 max-w-7xl mx-auto w-full">
-          <div className="space-y-2">
-            <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#B85D43]">
-              Studio Spotlight · 0{activeIndex + 1} / 0{N}
-            </p>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#2C302E] leading-none tracking-tight">
-              Stitches in{' '}
-              <span className="italic font-normal text-[#B85D43]">motion.</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-[#2C302E]/60 max-w-md font-medium leading-relaxed">
-              Scroll to move through the reels — or use the arrows. Full feed lives on TikTok.
-            </p>
-          </div>
-          <a
-            href={TIKTOK_PROFILE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 self-start md:self-auto px-5 py-2.5 rounded-full bg-[#2C302E] text-[#FDFBF7] text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#B85D43] transition-colors"
-          >
-            View more on TikTok
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
+        {header}
 
-        {/* Stage */}
-        <div className="relative z-10 flex-1 flex items-center justify-center px-2 md:px-6 min-h-0">
+        <div className="relative z-10 flex-1 flex items-center justify-center px-6 min-h-0">
           <button
             type="button"
             onClick={goPrev}
             disabled={activeIndex === 0}
             aria-label="Previous clip"
-            className="absolute left-2 md:left-8 z-30 w-11 h-11 rounded-full border border-[#2C302E]/15 bg-[#FDFBF7]/80 text-[#2C302E] flex items-center justify-center backdrop-blur-md shadow-sm disabled:opacity-25 hover:border-[#B85D43] hover:text-[#B85D43] transition-colors"
+            className="absolute left-6 z-30 w-11 h-11 rounded-full border border-[#2C302E]/15 bg-[#FDFBF7]/80 text-[#2C302E] flex items-center justify-center backdrop-blur-md shadow-sm disabled:opacity-25 hover:border-[#B85D43] hover:text-[#B85D43] transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -116,12 +209,12 @@ export const TikTokSpotlight: React.FC = () => {
             onClick={goNext}
             disabled={activeIndex === N - 1}
             aria-label="Next clip"
-            className="absolute right-2 md:right-8 z-30 w-11 h-11 rounded-full border border-[#2C302E]/15 bg-[#FDFBF7]/80 text-[#2C302E] flex items-center justify-center backdrop-blur-md shadow-sm disabled:opacity-25 hover:border-[#B85D43] hover:text-[#B85D43] transition-colors"
+            className="absolute right-6 z-30 w-11 h-11 rounded-full border border-[#2C302E]/15 bg-[#FDFBF7]/80 text-[#2C302E] flex items-center justify-center backdrop-blur-md shadow-sm disabled:opacity-25 hover:border-[#B85D43] hover:text-[#B85D43] transition-colors"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
 
-          <div className="relative w-full max-w-6xl h-[min(78vh,720px)] flex items-center justify-center">
+          <div className="relative w-full max-w-6xl h-[min(72vh,640px)] flex items-center justify-center">
             {CLIPS.map((clip, index) => {
               const offset = index - activeIndex;
               const abs = Math.abs(offset);
@@ -131,14 +224,13 @@ export const TikTokSpotlight: React.FC = () => {
                     key={clip.id}
                     aria-hidden
                     className="absolute opacity-0 pointer-events-none"
-                    style={{ transform: 'scale(0.7)' }}
                   />
                 );
               }
 
               const isCenter = offset === 0;
               const side = offset < 0 ? -1 : 1;
-              const x = isCenter ? 0 : side * 52;
+              const x = isCenter ? 0 : side * 48;
               const scale = isCenter ? 1 + localT * 0.01 : 0.8;
               const opacity = isCenter ? 1 : 0.38;
               const rotateY = isCenter ? 0 : side * -14;
@@ -149,7 +241,7 @@ export const TikTokSpotlight: React.FC = () => {
                   key={clip.id}
                   className="absolute transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   style={{
-                    width: 'min(380px, 86vw)',
+                    width: 'min(360px, 42vw)',
                     transform: `translateX(${x}%) scale(${scale}) perspective(1100px) rotateY(${rotateY}deg)`,
                     opacity,
                     zIndex: z,
@@ -169,7 +261,7 @@ export const TikTokSpotlight: React.FC = () => {
                     <iframe
                       src={tiktokEmbedSrc(clip.id)}
                       title={clip.title}
-                      className="w-full h-[min(70vh,620px)] bg-[#EFEBE4]"
+                      className="w-full h-[min(62vh,560px)] bg-[#EFEBE4]"
                       allow="encrypted-media; fullscreen; picture-in-picture"
                       allowFullScreen
                       loading={abs === 0 ? 'eager' : 'lazy'}
@@ -186,8 +278,7 @@ export const TikTokSpotlight: React.FC = () => {
           </div>
         </div>
 
-        {/* Scroll progress */}
-        <div className="relative z-20 px-4 md:px-12 pb-7 max-w-7xl mx-auto w-full">
+        <div className="relative z-20 px-12 pb-7 max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-4">
             <span className="text-[9px] uppercase tracking-[0.25em] font-bold text-[#2C302E]/35 shrink-0">
               Scroll
@@ -206,9 +297,7 @@ export const TikTokSpotlight: React.FC = () => {
                   aria-label={`Go to clip ${i + 1}`}
                   onClick={() => lockTo(i)}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === activeIndex
-                      ? 'w-7 bg-[#B85D43]'
-                      : 'w-1.5 bg-[#2C302E]/20 hover:bg-[#2C302E]/40'
+                    i === activeIndex ? 'w-7 bg-[#B85D43]' : 'w-1.5 bg-[#2C302E]/20 hover:bg-[#2C302E]/40'
                   }`}
                 />
               ))}

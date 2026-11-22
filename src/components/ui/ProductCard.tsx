@@ -39,7 +39,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onSelectProduct(product)}
-      className="group cursor-pointer flex flex-col justify-between p-4 sm:p-5 rounded-[36px] bg-[#FDFBF7] border border-[#EFEBE4] hover:border-[#D4A373] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_25px_50px_rgba(212,163,115,0.14)] select-none h-full"
+      className="group cursor-pointer flex flex-col justify-between p-3 sm:p-5 rounded-[24px] sm:rounded-[36px] bg-[#FDFBF7] border border-[#EFEBE4] hover:border-[#D4A373] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_25px_50px_rgba(212,163,115,0.14)] select-none h-full"
     >
       <div>
         {/* Availability + craft time */}
@@ -98,28 +98,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Artifact Metadata */}
-        <div className="mt-5 space-y-1.5 text-left">
-          <div className="flex justify-between items-start gap-2">
-            <h3 className="font-serif text-lg leading-tight text-[#2C302E] font-bold group-hover:text-[#B85D43] transition-colors line-clamp-2 flex-1">
+        <div className="mt-3 sm:mt-5 space-y-1.5 text-left">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
+            <h3 className="font-serif text-base sm:text-lg leading-tight text-[#2C302E] font-bold group-hover:text-[#B85D43] transition-colors line-clamp-2 flex-1">
               {product.name}
             </h3>
-            <span className="font-mono text-sm font-bold text-[#2C302E] mt-0.5 whitespace-nowrap">
+            <span className="font-mono text-xs sm:text-sm font-bold text-[#2C302E] sm:mt-0.5 whitespace-nowrap">
               {formatEtb(product.price)}
             </span>
           </div>
-          <p className="text-[11px] text-[#2C302E]/70 line-clamp-2 leading-relaxed font-medium">
+          <p className="hidden sm:block text-[11px] text-[#2C302E]/70 line-clamp-2 leading-relaxed font-medium">
             {product.description}
           </p>
         </div>
       </div>
 
       {/* Footer Details: Palette & Action */}
-      <div className="pt-4 mt-4 border-t border-[#EFEBE4] flex items-center justify-between">
-        <div className="flex items-center space-x-1.5">
-          {product.colorway.map((color, i) => (
+      <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-[#EFEBE4] flex items-center justify-between gap-2">
+        <div className="flex items-center space-x-1.5 min-w-0">
+          {product.colorway.slice(0, 4).map((color, i) => (
             <span 
               key={i} 
-              className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-inner" 
+              className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-black/10 shadow-inner shrink-0" 
               style={{ backgroundColor: color }} 
             />
           ))}
@@ -130,7 +130,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             e.stopPropagation();
             onAddToCart(product);
           }}
-          className="px-4 py-2 rounded-full bg-[#EFEBE4] hover:bg-[#D4A373] text-[#2C302E] hover:text-white text-[10px] uppercase tracking-widest font-bold transition-all duration-300"
+          className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#EFEBE4] hover:bg-[#D4A373] text-[#2C302E] hover:text-white text-[9px] sm:text-[10px] uppercase tracking-widest font-bold transition-all duration-300"
         >
           {cartCtaLabel(product)}
         </button>

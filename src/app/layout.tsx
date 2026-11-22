@@ -4,7 +4,6 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Plus_Jakarta_Sans, Space_Mono } from 'next/font/google';
 import './globals.css';
-import { CustomCursor } from '@/components/ui/CustomCursor';
 import { FloatingYarnThreads } from '@/components/ui/FloatingYarnThreads';
 import { AppLayoutShell } from '@/components/layout/AppLayoutShell';
 import { AppProviders } from '@/components/providers/AppProviders';
@@ -48,9 +47,6 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white min-h-screen flex flex-col relative overflow-x-hidden">
-        {/* Global Custom Cursor */}
-        <CustomCursor />
-
         <AppProviders>
           <div className="min-h-screen bg-[#FDFBF7] text-[#2C302E] font-sans antialiased selection:bg-[#D4A373] selection:text-white relative flex flex-col">
             {/* Global 3D Organic Spun Yarn Filament Simulation */}

@@ -193,14 +193,14 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const maxPct = ((rangeMax - priceBounds.min) / rangeSpan) * 100;
 
   return (
-    <main className="relative min-h-screen py-16 px-4 md:px-8 lg:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
-      <div className="w-full max-w-[100vw] mx-auto relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
-          <div className="inline-flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-md px-5 py-2 rounded-full border border-[#EFEBE4]">
+    <main className="relative min-h-screen py-10 sm:py-14 md:py-16 px-3 sm:px-4 md:px-8 lg:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 space-y-3 sm:space-y-4">
+          <div className="inline-flex items-center space-x-2 text-[10px] sm:text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full border border-[#EFEBE4]">
             <span>Our Products</span>
           </div>
 
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-[#2C302E] leading-none tracking-tight">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl text-[#2C302E] leading-[1.05] tracking-tight">
             Our <span className="italic font-normal text-[#B85D43]">Collection.</span>
           </h1>
 
@@ -209,14 +209,14 @@ export const ShopView: React.FC<ShopViewProps> = ({
           </p>
         </div>
 
-        <div className="max-w-md mx-auto mb-10">
+        <div className="max-w-md mx-auto mb-8 sm:mb-10 px-1">
           <div className="relative flex items-center">
             <Search className="w-4 h-4 text-[#D4A373] absolute left-4 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by keyword, wool, doll, cardigan, color..."
+              placeholder="Search wool, doll, cardigan, color…"
               className="w-full bg-[#EFEBE4]/70 border border-[#EFEBE4] focus:border-[#B85D43]/40 rounded-full pl-11 pr-10 py-3 text-xs text-[#2C302E] placeholder-[#2C302E]/40 outline-none backdrop-blur-sm transition-all"
             />
             {searchQuery && (
@@ -248,28 +248,28 @@ export const ShopView: React.FC<ShopViewProps> = ({
           )}
         </div>
 
-        <div className="relative mb-12 flex items-center justify-center max-w-5xl mx-auto group">
+        <div className="relative mb-8 sm:mb-12 flex items-center justify-center max-w-5xl mx-auto group">
           <button
             onClick={scrollLeft}
-            className="absolute left-0 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-[#2C302E] hover:bg-[#FDFBF7] transition-all opacity-0 md:group-hover:opacity-100 -translate-x-4"
+            className="hidden md:flex absolute left-0 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 items-center justify-center text-[#2C302E] hover:bg-[#FDFBF7] transition-all opacity-0 md:group-hover:opacity-100 -translate-x-4"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
 
           <div
             ref={scrollContainerRef}
-            className="flex overflow-x-auto py-2 px-4 mx-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+            className="flex overflow-x-auto py-2 px-2 sm:px-4 mx-0 sm:mx-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth w-full"
           >
-            <div className="inline-flex items-center space-x-2 p-1.5 rounded-full bg-[#EFEBE4]/85 border border-[#EFEBE4] backdrop-blur-lg shadow-sm shrink-0 min-w-max mx-auto">
+            <div className="inline-flex items-center space-x-1.5 sm:space-x-2 p-1.5 rounded-full bg-[#EFEBE4]/85 border border-[#EFEBE4] backdrop-blur-lg shadow-sm shrink-0 min-w-max mx-auto">
               {categoryList.map((cat) => {
                 const isActive = selectedCategory === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryChange(cat.id)}
-                    className={`flex-shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-xs uppercase tracking-widest font-bold transition-all duration-500 whitespace-nowrap snap-center ${
+                    className={`flex-shrink-0 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-xs uppercase tracking-widest font-bold transition-all duration-500 whitespace-nowrap snap-center ${
                       isActive
                         ? 'bg-[#B85D43] text-white shadow-sm'
                         : 'text-[#2C302E]/70 hover:text-[#2C302E] hover:bg-[#FDFBF7]'
@@ -282,19 +282,19 @@ export const ShopView: React.FC<ShopViewProps> = ({
             </div>
           </div>
 
-          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-l from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
 
           <button
             onClick={scrollRight}
-            className="absolute right-0 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-[#2C302E] hover:bg-[#FDFBF7] transition-all opacity-0 md:group-hover:opacity-100 translate-x-4"
+            className="hidden md:flex absolute right-0 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 items-center justify-center text-[#2C302E] hover:bg-[#FDFBF7] transition-all opacity-0 md:group-hover:opacity-100 translate-x-4"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 lg:gap-12">
           <aside className="w-full lg:w-[280px] flex-shrink-0">
-            <div className="sticky top-24 border border-[#E8E2D9] bg-[#FDFBF7]/90 backdrop-blur-md">
+            <div className="lg:sticky lg:top-24 border border-[#E8E2D9] bg-[#FDFBF7]/90 backdrop-blur-md rounded-2xl lg:rounded-none overflow-hidden">
               <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[#E8E2D9]">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <SlidersHorizontal className="w-4 h-4 text-[#B85D43] shrink-0" />
@@ -479,7 +479,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
           <div className="flex-1 min-w-0">
             {filteredProducts.length > 0 ? (
               <div
-                className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isPending ? 'opacity-40' : 'opacity-100'
                 }`}
               >
@@ -515,8 +515,8 @@ export const ShopView: React.FC<ShopViewProps> = ({
           </div>
         </div>
 
-        <div className="mt-28 py-12 border-t border-[#EFEBE4] text-center space-y-2">
-          <p className="font-serif text-2xl text-[#2C302E]">
+        <div className="mt-16 sm:mt-28 py-8 sm:py-12 border-t border-[#EFEBE4] text-center space-y-2 px-2">
+          <p className="font-serif text-xl sm:text-2xl text-[#2C302E]">
             Looking for a custom design or specific size?
           </p>
           <p className="text-xs text-[#2C302E]/60 uppercase tracking-widest font-mono font-medium">

@@ -31,8 +31,8 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   };
 
   return (
-    <main className="relative py-24 px-4 md:px-12 bg-transparent text-[#2C302E] select-none min-h-screen">
-      <div className="max-w-7xl mx-auto relative z-10 space-y-16">
+    <main className="relative py-10 sm:py-16 md:py-24 px-4 md:px-12 bg-transparent text-[#2C302E] select-none min-h-screen overflow-x-hidden">
+      <div className="max-w-7xl mx-auto relative z-10 space-y-10 sm:space-y-16">
         
         {/* Breadcrumb / Back Navigation */}
         <button 
@@ -44,7 +44,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
         </button>
 
         {/* TOP SECTION: Gallery & Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20">
           
           {/* Left: Image Gallery */}
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">

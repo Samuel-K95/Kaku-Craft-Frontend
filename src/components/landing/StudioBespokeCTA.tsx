@@ -35,20 +35,20 @@ export const StudioBespokeCTA: React.FC<StudioBespokeCTAProps> = ({
   }, [products]);
 
   return (
-    <section className="relative py-24 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-md overflow-hidden">
+    <section className="relative py-12 sm:py-16 md:py-24 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-md overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="rounded-[40px] bg-[#2C302E] text-[#FDFBF7] p-8 md:p-16 relative overflow-hidden shadow-2xl">
+        <div className="rounded-[28px] sm:rounded-[40px] bg-[#2C302E] text-[#FDFBF7] p-6 sm:p-8 md:p-16 relative overflow-hidden shadow-2xl">
           <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#FDFBF7_1px,transparent_1px)] [background-size:20px_20px]" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
-            <div className="lg:col-span-7 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6">
               <div className="inline-flex items-center space-x-2 bg-white/10 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-[0.25em] text-[#D4A373] font-bold backdrop-blur-md">
                 <Scissors className="w-3.5 h-3.5 text-[#D4A373]" />
                 <span>Custom Orders</span>
               </div>
 
-              <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-normal leading-[1.08] tracking-tight">
-                Looking for something custom? <br />
+              <h2 className="font-serif text-[1.75rem] sm:text-5xl md:text-6xl font-normal leading-[1.1] tracking-tight">
+                Looking for something custom?{' '}
                 <span className="italic text-[#D4A373]">We make it exactly how you want.</span>
               </h2>
 
@@ -75,11 +75,11 @@ export const StudioBespokeCTA: React.FC<StudioBespokeCTAProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-2 sm:pt-4">
                 <button
                   type="button"
                   onClick={onBespokeClick}
-                  className="px-8 py-4 rounded-full bg-[#D4A373] text-[#2C302E] text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#FDFBF7] transition-all duration-300 shadow-xl flex items-center space-x-3 group"
+                  className="w-full sm:w-auto justify-center px-7 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#D4A373] text-[#2C302E] text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#FDFBF7] transition-all duration-300 shadow-xl flex items-center space-x-3 group"
                 >
                   <span>Inquire Bespoke Piece</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -87,9 +87,9 @@ export const StudioBespokeCTA: React.FC<StudioBespokeCTAProps> = ({
               </div>
             </div>
 
-            <div className="lg:col-span-5 relative">
+            <div className="lg:col-span-5 relative order-first lg:order-none">
               {mosaic.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 max-w-[380px] mx-auto">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 max-w-[320px] sm:max-w-[380px] mx-auto">
                   {mosaic.map((product, i) => (
                     <div
                       key={product.id}
@@ -97,9 +97,9 @@ export const StudioBespokeCTA: React.FC<StudioBespokeCTAProps> = ({
                         i === 0
                           ? 'rounded-[28px_12px_28px_12px] aspect-[3/4]'
                           : i === 1
-                            ? 'rounded-[12px_28px_12px_28px] aspect-[3/3.6] mt-6'
+                            ? 'rounded-[12px_28px_12px_28px] aspect-[3/3.6] mt-4 sm:mt-6'
                             : i === 2
-                              ? 'rounded-[12px_28px_28px_12px] aspect-[3/3.6] -mt-4'
+                              ? 'rounded-[12px_28px_28px_12px] aspect-[3/3.6] -mt-2 sm:-mt-4'
                               : 'rounded-[28px_12px_12px_28px] aspect-[3/4]'
                       }`}
                     >
