@@ -32,3 +32,37 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes spotlight-drift {
+  0% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    transform: translate(-46%, 12px) scale(1.06);
+  }
+}
+
+@keyframes spotlight-scan {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  88% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(480px);
+    opacity: 0;
+  }
+}
+
+.animate-spotlight-drift {
+  animation: spotlight-drift 18s ease-in-out infinite alternate;
+}
+
+.animate-spotlight-scan {
+  animation: spotlight-scan 4.5s ease-in-out infinite;
+}

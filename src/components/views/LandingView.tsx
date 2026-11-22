@@ -3,11 +3,11 @@
 import React from 'react';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { InteractiveLineup } from '@/components/landing/InteractiveLineup';
-import { CraftPillars } from '@/components/landing/CraftPillars';
 import { Product } from '@/types';
 import { StudioBespokeCTA } from '../landing/StudioBespokeCTA';
 import { SpecialOccasions } from '@/components/landing/SpecialOccasions';
 import { NewArrivals } from '@/components/landing/NewArrivals';
+import { TikTokSpotlight } from '@/components/landing/TikTokSpotlight';
 import { useCart } from '@/context/CartContext';
 
 interface LandingViewProps {
@@ -33,15 +33,15 @@ export const LandingView: React.FC<LandingViewProps> = ({
   return (
     <main className="relative">
       <HeroSection onExploreClick={onExploreClick} />
-      <SpecialOccasions />
+      {/* <SpecialOccasions /> */}
       <InteractiveLineup products={products} onSelectProduct={onSelectProduct} />
+      <TikTokSpotlight />
       <NewArrivals
         products={products}
         onSelectProduct={onSelectProduct}
         onAddToCart={handleAddToCart}
       />
-      <CraftPillars />
-      <StudioBespokeCTA onBespokeClick={onBespokeClick} />
+      <StudioBespokeCTA products={products} onBespokeClick={onBespokeClick} />
     </main>
   );
 };

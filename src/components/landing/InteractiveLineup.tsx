@@ -3,14 +3,62 @@
 // ============================================================================
 'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
-import { Sparkles, Eye, ArrowUpRight } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Product } from '@/types';
 
 interface InteractiveLineupProps {
   products: Product[];
   onSelectProduct: (product: Product) => void;
+}
+
+/** Prefer one product per category so the lineup spans the catalog. */
+function pickDiverseProducts(products: Product[], limit = 5): Product[] {
+  if (products.length <= limit) return products;
+
+  const byCategory = new Map<string, Product[]>();
+  for (const product of products) {
+    const key = product.category || 'other';
+    const bucket = byCategory.get(key);
+    if (bucket) bucket.push(product);
+    else byCategory.set(key, [product]);
+  }
+
+  const categories = [...byCategory.keys()];
+  const picked: Product[] = [];
+  const used = new Set<string>();
+
+  // Round-robin across categories first
+  let round = 0;
+  while (picked.length < limit && categories.length > 0) {
+    let addedThisRound = false;
+    for (const category of categories) {
+      if (picked.length >= limit) break;
+      const bucket = byCategory.get(category) || [];
+      const candidate = bucket[round];
+      if (candidate && !used.has(candidate.id)) {
+        picked.push(candidate);
+        used.add(candidate.id);
+        addedThisRound = true;
+      }
+    }
+    if (!addedThisRound) break;
+    round += 1;
+  }
+
+  // Fill any remaining slots from leftover products
+  if (picked.length < limit) {
+    for (const product of products) {
+      if (picked.length >= limit) break;
+      if (!used.has(product.id)) {
+        picked.push(product);
+        used.add(product.id);
+      }
+    }
+  }
+
+  return picked;
 }
 
 const TITLE_WORD_1 = 'OUR'.split('');
@@ -21,35 +69,35 @@ const TOTAL_LETTERS = TITLE_WORD_1.length + TITLE_WORD_2.length; // 14 letters
 const CONTAINER_PRESETS = [
   {
     shape: 'rounded-t-[100px] rounded-b-[32px]',
-    tilt: '-rotate-2 group-hover:rotate-0',
+    tilt: '-rotate-2',
     aspect: 'aspect-[3/4.2]',
     border: 'border-[#D4A373]/60',
     badge: 'bg-[#D4A373] text-white',
   },
   {
     shape: 'rounded-[90px_32px_90px_32px]',
-    tilt: 'rotate-3 group-hover:rotate-0',
+    tilt: 'rotate-3',
     aspect: 'aspect-[3/4.4]',
     border: 'border-[#52796F]/60',
     badge: 'bg-[#52796F] text-white',
   },
   {
     shape: 'rounded-full',
-    tilt: '-rotate-1 group-hover:rotate-0',
+    tilt: '-rotate-1',
     aspect: 'aspect-square',
     border: 'border-[#B85D43]/60',
     badge: 'bg-[#B85D43] text-white',
   },
   {
     shape: 'rounded-b-[100px] rounded-t-[32px]',
-    tilt: 'rotate-2 group-hover:rotate-0',
+    tilt: 'rotate-2',
     aspect: 'aspect-[3/4.3]',
     border: 'border-[#2C302E]/50',
     badge: 'bg-[#2C302E] text-white',
   },
   {
     shape: 'rounded-[48px_100px_48px_100px]',
-    tilt: '-rotate-3 group-hover:rotate-0',
+    tilt: '-rotate-3',
     aspect: 'aspect-[3/4.2]',
     border: 'border-[#D4A373]/70',
     badge: 'bg-[#D4A373] text-white',
@@ -64,8 +112,8 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
   const [totalProgress, setTotalProgress] = useState(0); // 0.0 -> 1.0
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  const displayProducts = products.slice(0, 5);
-  const totalItems = displayProducts.length; // 5 items
+  const displayProducts = useMemo(() => pickDiverseProducts(products, 5), [products]);
+  const totalItems = displayProducts.length; // up to 5 items across categories
 
   /**
    * Halfway Entry Tracker:
@@ -279,7 +327,6 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
             {displayProducts.map((product, idx) => {
               const preset = CONTAINER_PRESETS[idx % CONTAINER_PRESETS.length];
               const isHovered = hoveredIdx === idx;
-              const isAnyHovered = hoveredIdx !== null;
 
               return (
                 <div
@@ -288,13 +335,7 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
                   onMouseEnter={() => setHoveredIdx(idx)}
                   onMouseLeave={() => setHoveredIdx(null)}
                   onClick={() => onSelectProduct(product)}
-                  className={`relative group cursor-pointer flex flex-col items-center transition-all duration-300 will-change-transform ${preset.tilt} ${
-                    isHovered
-                      ? 'scale-105 z-30'
-                      : isAnyHovered
-                      ? 'filter blur-[1.5px] opacity-40 scale-95'
-                      : 'opacity-100'
-                  }`}
+                  className={`relative group cursor-pointer flex flex-col items-center ${preset.tilt}`}
                 >
                   {/* Category Tag Pill */}
                   <div className="absolute -top-3 z-30 flex items-center space-x-1 shadow-md">
@@ -305,7 +346,7 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
 
                   {/* Asymmetric Organic Mask Shape Container */}
                   <div
-                    className={`relative w-full ${preset.aspect} ${preset.shape} ${preset.border} border-2 overflow-hidden bg-[#FDFBF7] shadow-[0_20px_35px_rgba(44,48,46,0.18)] transition-shadow duration-500 group-hover:shadow-[0_28px_50px_rgba(44,48,46,0.28)]`}
+                    className={`relative w-full ${preset.aspect} ${preset.shape} ${preset.border} border-2 overflow-hidden bg-[#FDFBF7] shadow-[0_20px_35px_rgba(44,48,46,0.18)]`}
                   >
                     <div className="absolute inset-0 bg-[#D4A373]/10 mix-blend-multiply pointer-events-none z-10" />
 
@@ -314,7 +355,7 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
                       alt={product.name}
                       fill
                       sizes="(max-width: 768px) 50vw, 20vw"
-                      className="object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                      className="object-cover object-center transition-opacity duration-500"
                     />
 
                     {/* Contrast Gradient */}
@@ -328,11 +369,6 @@ export const InteractiveLineup: React.FC<InteractiveLineupProps> = ({
                       <p className="text-[10px] font-mono text-[#D4A373] tracking-widest mt-0.5 font-bold">
                         ${product.price}
                       </p>
-                    </div>
-
-                    {/* Inspection Quick Peek Icon */}
-                    <div className="absolute top-3 right-3 z-20 w-7 h-7 rounded-full bg-white text-[#2C302E] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md">
-                      <ArrowUpRight className="w-3.5 h-3.5" />
                     </div>
                   </div>
 

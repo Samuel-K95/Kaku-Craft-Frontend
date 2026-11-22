@@ -3,86 +3,191 @@
 // ============================================================================
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
-import { Sparkles, Scissors, Compass, HeartHandshake } from 'lucide-react';
+import Link from 'next/link';
+import { Scissors, Compass, HeartHandshake, ArrowUpRight, ExternalLink } from 'lucide-react';
+import { useProductsQuery } from '@/lib/products';
+import { Product } from '@/types';
+import { formatEtb } from '@/lib/money';
+
+const SOCIALS = [
+  { label: 'Telegram', href: 'https://t.me/keku_craft' },
+  { label: 'TikTok', href: 'https://www.tiktok.com/@kakucraft621' },
+  { label: 'Instagram', href: 'https://www.instagram.com/keku_craft_779/' },
+];
+
+/** Intentional organic masks — same footprint, different silhouettes. */
+const FRAME_SHAPES = [
+  {
+    mask: 'rounded-t-[100px] rounded-b-[28px]',
+    border: 'border-[#D4A373]/55',
+    tilt: '-rotate-1',
+  },
+  {
+    mask: 'rounded-[80px_28px_80px_28px]',
+    border: 'border-[#52796F]/45',
+    tilt: 'rotate-1',
+  },
+  {
+    mask: 'rounded-full',
+    border: 'border-[#B85D43]/45',
+    tilt: '-rotate-[0.5deg]',
+  },
+  {
+    mask: 'rounded-b-[100px] rounded-t-[28px]',
+    border: 'border-[#2C302E]/35',
+    tilt: 'rotate-1',
+  },
+  {
+    mask: 'rounded-[40px_90px_40px_90px]',
+    border: 'border-[#D4A373]/50',
+    tilt: '-rotate-1',
+  },
+  {
+    mask: 'rounded-[90px_40px_90px_40px]',
+    border: 'border-[#52796F]/40',
+    tilt: 'rotate-[0.5deg]',
+  },
+] as const;
+
+function pickGallery(products: Product[], count: number): Product[] {
+  if (!products.length) return [];
+  const byCat = new Map<string, Product>();
+  for (const p of products) {
+    if (!byCat.has(p.category)) byCat.set(p.category, p);
+  }
+  const diverse = [...byCat.values()];
+  const rest = products.filter((p) => !diverse.some((d) => d.id === p.id));
+  return [...diverse, ...rest].slice(0, count);
+}
 
 export const AboutView: React.FC = () => {
+  const { data: products = [], isLoading } = useProductsQuery();
+  const gallery = useMemo(() => pickGallery(products, 6), [products]);
+  const hero = gallery.slice(0, 4);
+  const featured = gallery[0];
+
   return (
     <main className="relative min-h-screen py-16 px-4 md:px-12 bg-[#FDFBF7]/70 backdrop-blur-sm text-[#2C302E] select-none">
       <div className="max-w-7xl mx-auto relative z-10 space-y-20">
-        
-        {/* --- EDITORIAL HEADER --- */}
+        {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D4A373] bg-[#EFEBE4]/80 backdrop-blur-sm px-5 py-2 rounded-full border border-[#EFEBE4]">
-            <span>Who We Are</span>
+            <span>ከኩ craft · About</span>
           </div>
 
           <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-[#2C302E] leading-none tracking-tight">
-            The Value of <br />
-            <span className="italic font-normal text-[#B85D43]">Handmade Work.</span>
+            From yarn to glam —{' '}
+            <span className="italic font-normal text-[#B85D43]">made by hand.</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-[#2C302E]/70 leading-relaxed font-sans max-w-lg mx-auto font-medium">
-            Taking the time to craft beautiful, lasting clothing and accessories in the Ethiopian highlands.
+            ከኩ craft (Keku craft) is an Addis Ababa studio for crochet jewelry, wearables, and custom pieces —
+            loop by loop, never by machine.
           </p>
         </div>
 
-        {/* --- SMALLER EDITORIAL HERO SHOWCASE --- */}
-        <div className="relative aspect-[16/9] max-w-4xl mx-auto w-full rounded-[40px] overflow-hidden border-2 border-[#EFEBE4] shadow-md">
-          <Image 
-            src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop"
-            alt="Hands crocheting with wooden hooks and organic wool"
-            fill
-            sizes="(max-width: 1200px) 100vw, 1200px"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#2C302E]/70 via-transparent to-transparent pointer-events-none" />
-          
-          <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white text-xs font-mono">
-            <span className="bg-[#2C302E]/80 backdrop-blur-md px-4 py-2 rounded-full uppercase tracking-widest text-[10px] font-bold">
-              Addis Ababa Studio
-            </span>
-            <span className="hidden sm:inline-block text-[#D4A373] uppercase tracking-widest font-bold text-[10px] bg-[#2C302E]/80 backdrop-blur-md px-4 py-2 rounded-full">
-              100% Handmade Process
-            </span>
-          </div>
+        {/* Hero frames — equal columns, organic silhouettes */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-7 max-w-5xl mx-auto items-end">
+          {(hero.length ? hero : Array.from({ length: 4 })).map((item, i) => {
+            const product = typeof item === 'object' && item && 'image' in item ? (item as Product) : null;
+            const frame = FRAME_SHAPES[i % FRAME_SHAPES.length];
+            return (
+              <div
+                key={product?.id || `placeholder-${i}`}
+                className={`relative flex flex-col items-center ${frame.tilt}`}
+              >
+                <div
+                  className={`relative w-full aspect-[3/4] overflow-hidden border-2 bg-[#EFEBE4] ${frame.mask} ${frame.border}`}
+                >
+                  {product ? (
+                    <>
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover"
+                        priority={i === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#2C302E]/55 via-transparent to-transparent" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-xs text-[#2C302E]/40 font-medium">
+                      {isLoading ? 'Loading…' : 'Soon'}
+                    </div>
+                  )}
+                </div>
+                {product && (
+                  <div className="mt-3 text-center px-1">
+                    <p className="font-serif text-sm text-[#2C302E] leading-tight line-clamp-1">{product.name}</p>
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-[#B85D43] mt-0.5">
+                      {product.tag}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* --- NARRATIVE TWO-COLUMN EDITORIAL GRID --- */}
+        {/* Story */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-5 space-y-4">
             <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D4A373] font-mono">
               Our Story
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl text-[#2C302E] leading-tight">
-              &ldquo;To knit is to make clothing; to crochet is to craft art stitch by stitch.&rdquo;
+              Jewelry & crochet that slays — crafted in Addis Ababa.
             </h2>
             <div className="w-16 h-0.5 bg-[#D4A373]" />
           </div>
 
           <div className="lg:col-span-7 space-y-6 text-[#2C302E]/80 font-sans text-sm sm:text-base leading-relaxed font-medium">
             <p>
-              Based in Addis Ababa, <strong>Kaku Craft</strong> is a handmade clothing studio. We focus on the peaceful art of crochet to create beautiful, modern clothing and items.
+              <strong>ከኩ craft</strong> started as a love for yarn, color, and pieces you can wear every day —
+              from keychain dolls and baby knits to cardigans, shrugs, and crop tops.
             </p>
             <p>
-              Unlike factory machines, real crochet can only be done by human hands. Every single loop is made by an artisan. When you wear a Kaku Craft item, you are wearing something that took hours of focus and care to make.
+              Every item is crocheted by hand. That means real hours of tension, finishing, and care — not
+              factory yards cut from a roll. When you order from us, you are ordering a piece that did not exist
+              until someone sat down and made it.
             </p>
             <p>
-              Our process is also completely zero-waste. From our Ethiopian highland wool to our natural plant dyes, we make sure to use everything and throw away nothing.
+              We share work-in-progress and finished drops on Telegram and TikTok, take custom color and size
+              requests, and ship from Addis Ababa. Prices are in ETB
+              {featured ? ` — pieces in the shop start around ${formatEtb(Math.min(...products.map((p) => p.price)))}` : ''}
+              .
             </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#2C302E] text-white text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#B85D43] transition-colors"
+              >
+                Browse the shop
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#2C302E]/20 text-[#2C302E] text-[10px] uppercase tracking-[0.2em] font-bold hover:border-[#B85D43] hover:text-[#B85D43] transition-colors"
+              >
+                Request custom
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* --- THREE CORE PILLARS GRID --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
+        {/* Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div className="p-8 rounded-[32px] bg-[#EFEBE4]/75 border border-[#EFEBE4] space-y-3 backdrop-blur-md">
             <div className="w-10 h-10 rounded-2xl bg-[#B85D43]/15 flex items-center justify-center text-[#B85D43]">
               <Scissors className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-[#2C302E] font-bold">One Artisan Per Item</h3>
+            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Hand-looped only</h3>
             <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans font-medium">
-              One skilled crafter shapes your garment from the first loop to the final knot, ensuring consistent tension and quality.
+              No industrial crochet. Each cardigan, doll, or charm is shaped stitch by stitch with consistent
+              tension and finishing.
             </p>
           </div>
 
@@ -90,9 +195,10 @@ export const AboutView: React.FC = () => {
             <div className="w-10 h-10 rounded-2xl bg-[#52796F]/15 flex items-center justify-center text-[#52796F]">
               <Compass className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Zero-Waste Making</h3>
+            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Made to order when needed</h3>
             <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans font-medium">
-              Our loop method uses exactly the amount of yarn needed. We produce zero fabric scraps that would end up in a landfill.
+              In-stock pieces ship quickly. Pre-orders and customs get a clear make-time so you know when your
+              piece will be ready.
             </p>
           </div>
 
@@ -100,77 +206,108 @@ export const AboutView: React.FC = () => {
             <div className="w-10 h-10 rounded-2xl bg-[#D4A373]/20 flex items-center justify-center text-[#D4A373]">
               <HeartHandshake className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Lifetime Support</h3>
+            <h3 className="font-serif text-xl text-[#2C302E] font-bold">Your colors, your fit</h3>
             <p className="text-xs text-[#2C302E]/70 leading-relaxed font-sans font-medium">
-              Every item comes with matching yarn for repairs. We are here to help you fix any damage your item might take over the years.
+              Tell us Medium through XXL, a colorway, or a custom doll idea — we will make it for you from the
+              Addis Ababa studio.
             </p>
           </div>
         </div>
 
-        {/* --- EVENTS, GALLERY & EXHIBITIONS SECTION --- */}
-        <div className="pt-16 pb-8">
-          <div className="text-center mb-12 space-y-2">
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#2C302E]">Events & Exhibitions</h2>
-            <p className="text-sm font-medium text-[#2C302E]/70 max-w-lg mx-auto">
-              Join us in person to see our latest collections and meet the crafters behind Kaku Craft.
-            </p>
+        {/* Live atelier gallery */}
+        <div className="pt-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D4A373] font-mono">
+                From the atelier
+              </span>
+              <h2 className="font-serif text-3xl sm:text-4xl text-[#2C302E]">Pieces we actually make.</h2>
+            </div>
+            <Link
+              href="/shop"
+              className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#B85D43] hover:underline"
+            >
+              See all in shop →
+            </Link>
           </div>
 
-          <div className="flex flex-col gap-10">
-            {/* Event 1 — image left, text right */}
-            <div className="group grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[32px] border border-[#EFEBE4] bg-[#FDFBF7] hover:shadow-lg transition-all">
-              <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[280px] w-full">
-                <Image 
-                  src="https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop"
-                  alt="Addis Ababa Fashion Week"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-[#B85D43]">
-                  Upcoming
-                </div>
-              </div>
-              <div className="flex flex-col justify-center p-8 md:p-10 space-y-3">
-                <h3 className="font-serif text-2xl md:text-3xl text-[#2C302E] font-bold">Addis Ababa Fashion Week</h3>
-                <p className="text-xs font-mono text-[#2C302E]/60 uppercase tracking-widest font-bold">
-                  Nov 12 - Nov 15, 2026 • Skylight Hotel
-                </p>
-                <p className="text-sm font-medium text-[#2C302E]/80 leading-relaxed">
-                  Catch our runway debut featuring our winter collection of oversized mohair cardigans and heavy-knit blankets.
-                </p>
-              </div>
+          {gallery.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-10 md:gap-x-8 md:gap-y-12">
+              {gallery.map((product, i) => {
+                const frame = FRAME_SHAPES[i % FRAME_SHAPES.length];
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/shop/${product.id}`}
+                    className={`group flex flex-col items-center ${frame.tilt}`}
+                  >
+                    <div
+                      className={`relative w-full aspect-[3/4] overflow-hidden border-2 bg-[#EFEBE4] ${frame.mask} ${frame.border}`}
+                    >
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#2C302E]/50 via-transparent to-transparent" />
+                    </div>
+                    <div className="mt-3 text-center px-1">
+                      <p className="font-serif text-base text-[#2C302E] leading-tight line-clamp-1 group-hover:text-[#B85D43] transition-colors">
+                        {product.name}
+                      </p>
+                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#2C302E]/50 mt-1">
+                        {product.category.replace(/-/g, ' ')} · {formatEtb(product.price)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
+          ) : (
+            <div className="rounded-[28px] border border-dashed border-[#E8E2D9] py-16 text-center text-sm text-[#2C302E]/50">
+              {isLoading ? 'Loading atelier pieces…' : 'Catalog pieces will appear here once the shop is live.'}
+            </div>
+          )}
+        </div>
 
-            {/* Event 2 — text left, image right */}
-            <div className="group grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[32px] border border-[#EFEBE4] bg-[#FDFBF7] hover:shadow-lg transition-all">
-              <div className="flex flex-col justify-center p-8 md:p-10 space-y-3 order-2 md:order-1">
-                <h3 className="font-serif text-2xl md:text-3xl text-[#2C302E] font-bold">Monthly Studio Open House</h3>
-                <p className="text-xs font-mono text-[#2C302E]/60 uppercase tracking-widest font-bold">
-                  First Saturday of every month • Kaku Studio
-                </p>
-                <p className="text-sm font-medium text-[#2C302E]/80 leading-relaxed">
-                  Visit our workspace, browse raw yarns, meet the artisans, and learn the basics of crochet in our free afternoon workshop.
-                </p>
-              </div>
-              <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[280px] w-full order-1 md:order-2">
-                <Image 
-                  src="https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?q=80&w=800&auto=format&fit=crop"
-                  alt="Studio Open House"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-              </div>
+        {/* Connect — replaces fake events */}
+        <div className="rounded-[36px] border border-[#EFEBE4] bg-[#EFEBE4]/50 backdrop-blur-sm p-8 md:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D4A373] font-mono">
+                Stay close
+              </span>
+              <h2 className="font-serif text-3xl md:text-4xl text-[#2C302E] leading-tight">
+                Follow the making — then order what you love.
+              </h2>
+              <p className="text-sm text-[#2C302E]/70 font-medium leading-relaxed max-w-xl">
+                New drops, customs, and studio clips land first on Telegram and TikTok. Reach out anytime for a
+                custom color, size, or design.
+              </p>
+            </div>
+            <div className="lg:col-span-5 flex flex-col gap-3">
+              {SOCIALS.map((s) => (
+                <a
+                  key={s.href}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-5 py-4 rounded-2xl bg-[#FDFBF7] border border-[#EFEBE4] text-sm font-bold text-[#2C302E] hover:border-[#B85D43] hover:text-[#B85D43] transition-colors"
+                >
+                  {s.label}
+                  <ExternalLink className="w-4 h-4 opacity-50" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* --- MINIMALIST FOOTER NOTE --- */}
-        <div className="pt-16 border-t border-[#EFEBE4] text-center space-y-2">
-          <p className="font-serif text-2xl text-[#2C302E]">
-            Handmade in Addis Ababa, Ethiopia
-          </p>
+        <div className="pt-8 border-t border-[#EFEBE4] text-center space-y-2">
+          <p className="font-serif text-2xl text-[#2C302E]">Handmade in Addis Ababa, Ethiopia</p>
           <p className="text-xs text-[#2C302E]/60 uppercase tracking-widest font-mono">
-            Preserving indigenous weaving heritage • Global Express Shipping
+            ከኩ craft · Jewelry & crochet · Prices in ETB
           </p>
         </div>
       </div>
