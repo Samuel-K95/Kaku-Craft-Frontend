@@ -1,0 +1,19 @@
+# Staging / development Blueprint for Kaku Craft Next.js on Render.
+# Dashboard → New → Blueprint → connect Samuel-K95/Kaku-Craft-Frontend
+# After the API is live, set NEXT_PUBLIC_API_URL to https://<api-service>.onrender.com/api
+
+services:
+  - type: web
+    name: kaku-web-staging
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_WS_URL
+        sync: false
