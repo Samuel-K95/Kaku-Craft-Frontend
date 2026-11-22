@@ -2,8 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ApiCategory, ApiProduct } from '@/types/products';
 import { Product, ProductCategory } from '@/types';
 import { PRODUCTS } from '@/data/products';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+import { API_BASE_URL } from '@/lib/config';
 
 export function mapApiProductToUiProduct(p: ApiProduct): Product {
   const primaryImage = p.images?.find((img) => img.is_primary)?.image || p.images?.[0]?.image || 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=1200&q=80';
@@ -64,6 +63,7 @@ export async function getLiveProducts(params?: { category?: string; search?: str
     });
 
     if (!res.ok) {
+      console.error(`[products] ${url} failed: ${res.status}`);
       return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
     }
     const data = (await res.json()) as ApiProduct[];
@@ -71,7 +71,8 @@ export async function getLiveProducts(params?: { category?: string; search?: str
       return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
     }
     return data.map(mapApiProductToUiProduct);
-  } catch {
+  } catch (err) {
+    console.error('[products] fetch error', err);
     return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
   }
 }

@@ -1,6 +1,5 @@
 import { AuthTokens, BackendUserPayload, RefreshResponse, User } from '@/types/auth';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+import { API_BASE_URL } from '@/lib/config';
 
 const TOKEN_STORAGE_KEY = 'kaku_access_token';
 const REFRESH_STORAGE_KEY = 'kaku_refresh_token';

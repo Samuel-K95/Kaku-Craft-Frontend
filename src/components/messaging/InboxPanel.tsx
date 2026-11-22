@@ -5,7 +5,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, getStoredTokens, normalizeError } from '@/lib/api';
 import { ApiConversation, ApiMessage } from '@/types/messaging';
 
-const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000/ws';
+import { WS_BASE_URL } from '@/lib/config';
+
+const WS_BASE = WS_BASE_URL;
 
 export const InboxPanel: React.FC<{
   allowCreate?: boolean;
