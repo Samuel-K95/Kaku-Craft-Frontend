@@ -37,6 +37,7 @@ export function mapApiProductToUiProduct(p: ApiProduct): Product {
 export async function getLiveCategories(): Promise<ApiCategory[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/products/categories/`, {
+      headers: { Accept: 'application/json' },
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
@@ -59,6 +60,7 @@ export async function getLiveProducts(params?: { category?: string; search?: str
     const qs = query.toString();
     const url = `${API_BASE_URL}/products/items/${qs ? `?${qs}` : ''}`;
     const res = await fetch(url, {
+      headers: { Accept: 'application/json' },
       next: { revalidate: 60 },
     });
 
@@ -120,15 +122,22 @@ export function useProductsQuery(filters?: { category?: string; search?: string 
         query.set('search', filters.search);
       }
       const qs = query.toString();
-      const res = await fetch(`${API_BASE_URL}/products/items/${qs ? `?${qs}` : ''}`);
+      const res = await fetch(`${API_BASE_URL}/products/items/${qs ? `?${qs}` : ''}`, {
+        headers: { Accept: 'application/json' },
+      });
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = (await res.json()) as ApiProduct[];
-      if (!Array.isArray(data) || data.length === 0) {
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected products response');
+      }
+      if (data.length === 0) {
         return process.env.NODE_ENV === 'development' ? PRODUCTS : [];
       }
       return data.map(mapApiProductToUiProduct);
     },
     initialData,
+    // Treat SSR/bootstrap data as fresh so a mount refetch cannot wipe the grid.
+    initialDataUpdatedAt: initialData?.length ? Date.now() : undefined,
     staleTime: 60 * 1000,
   });
 }

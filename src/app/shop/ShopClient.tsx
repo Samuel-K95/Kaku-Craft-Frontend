@@ -38,7 +38,7 @@ export default function ShopClient({ initialProducts, initialCategories, initial
 
   return (
     <ShopView
-      products={products || initialProducts}
+      products={(products && products.length > 0 ? products : initialProducts) || []}
       categories={categories}
       initialSearch={initialSearch}
       onAddToCart={handleAddToCart}

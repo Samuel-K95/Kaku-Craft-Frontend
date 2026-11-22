@@ -82,8 +82,6 @@ export const ShopView: React.FC<ShopViewProps> = ({
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [pricePresetId, setPricePresetId] = useState<string>('all');
-  const [rangeMin, setRangeMin] = useState(0);
-  const [rangeMax, setRangeMax] = useState(0);
   const [availability, setAvailability] = useState<AvailabilityFilter>('all');
   const [isPending, startTransition] = useTransition();
 
@@ -91,6 +89,10 @@ export const ShopView: React.FC<ShopViewProps> = ({
     () => getPriceBounds(products.map((p) => p.price)),
     [products]
   );
+
+  // Init from live bounds — starting at 0/0 filters out every product on SSR/first paint.
+  const [rangeMin, setRangeMin] = useState(priceBounds.min);
+  const [rangeMax, setRangeMax] = useState(priceBounds.max);
 
   const pricePresets = useMemo(() => buildPricePresets(priceBounds), [priceBounds]);
 
